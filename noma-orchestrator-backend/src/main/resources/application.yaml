@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: noma-orchestrator
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    password: qwerty
+    url: jdbc:postgresql://localhost:5432/dev_noma_orchestrator
+  liquibase:
+    database-change-log-lock-table: ${spring.application.name}_DATABASECHANGELOCK
+    change-log: db.changelog/changelog-master.yaml
+server:
+  port: 9999
