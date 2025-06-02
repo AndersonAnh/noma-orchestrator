@@ -11,3 +11,14 @@ spring:
     change-log: db.changelog/changelog-master.yaml
 server:
   port: 9999
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  info:
+    title: My API
+    version: 1.0.0
+    description: API Documentation
