@@ -22,3 +22,6 @@ springdoc:
     title: My API
     version: 1.0.0
     description: API Documentation
+integration:
+  complex-check:
+    complex-check-url: ${COMPLEX_CHECK_URL:http://localhost:8081/check}
