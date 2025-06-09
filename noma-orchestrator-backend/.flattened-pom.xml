@@ -7,7 +7,9 @@
     <artifactId>noma-orchestrator</artifactId>
     <version>1.0.0</version>
   </parent>
+  <groupId>ru.vtb.msa</groupId>
   <artifactId>noma-orchestrator-backend</artifactId>
+  <version>1.0.0</version>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -35,6 +37,11 @@
         <groupId>io.hypersistence</groupId>
         <artifactId>hypersistence-utils-hibernate-63</artifactId>
         <version>3.9.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>2.5.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.activemq</groupId>
@@ -7511,12 +7518,26 @@
       <artifactId>liquibase-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>${swagger.version}</version>
+    </dependency>
+    <dependency>
       <groupId>io.hypersistence</groupId>
       <artifactId>hypersistence-utils-hibernate-63</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <build>
