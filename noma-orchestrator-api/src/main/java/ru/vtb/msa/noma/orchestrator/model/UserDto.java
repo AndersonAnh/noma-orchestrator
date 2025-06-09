@@ -9,8 +9,8 @@ import lombok.Data;
 @Builder
 public class UserDto {
     @NotNull
-    @JsonProperty("name")
-    private String fullName;
+    //@JsonProperty("name")
+    private String name;
     @NotNull
     private String taxId;
     @NotNull
