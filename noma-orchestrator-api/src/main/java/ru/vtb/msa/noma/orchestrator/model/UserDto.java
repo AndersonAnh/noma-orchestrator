@@ -1,6 +1,5 @@
 package ru.vtb.msa.noma.orchestrator.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
