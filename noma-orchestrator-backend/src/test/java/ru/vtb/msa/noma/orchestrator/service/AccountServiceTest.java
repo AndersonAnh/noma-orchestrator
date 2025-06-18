@@ -162,5 +162,4 @@ public class AccountServiceTest {
         verify(complexCheckClient).complexCheck(validRequest);
         verifyNoInteractions(userRepository, accountRepository);
     }
-
 }

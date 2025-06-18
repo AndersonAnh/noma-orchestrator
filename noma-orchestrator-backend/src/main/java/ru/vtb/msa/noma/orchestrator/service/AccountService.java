@@ -2,21 +2,22 @@ package ru.vtb.msa.noma.orchestrator.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.AccountRepository;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.UserRepository;
 import ru.vtb.msa.noma.orchestrator.enums.AccountStatus;
 import ru.vtb.msa.noma.orchestrator.enums.Currency;
-import ru.vtb.msa.noma.orchestrator.exception.ComplexCheckArbitrationException;
-import ru.vtb.msa.noma.orchestrator.exception.ComplexCheckDenyException;
-import ru.vtb.msa.noma.orchestrator.exception.XRequestIdNotCorrectException;
+import ru.vtb.msa.noma.orchestrator.exception.*;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
 import ru.vtb.msa.noma.orchestrator.model.CreateAccountRequest;
 import ru.vtb.msa.noma.orchestrator.model.CreateAccountResponse;
+import ru.vtb.msa.noma.orchestrator.model.TransactionRequest;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,8 @@ public class AccountService {
     private final UserRepository userRepository;
 
     private final AccountRepository accountRepository;
+
+    private final TransactionService transactionService;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         validateHeader(xRequestId);
@@ -41,6 +44,30 @@ public class AccountService {
         Account savedAccount = accountRepository.save(account);
 
         return new CreateAccountResponse(request.user(), savedAccount.getStatus().name());
+    }
+
+    @Transactional
+    public void getTransactionsProcess(String xRequestId, TransactionRequest request) {
+        validateHeader(xRequestId);
+
+        if (accountExists(request.senderAccountId())) {
+            throw new TransactionSenderNotFoundException("Счет отправителя не найден");
+        }
+        if (accountExists(request.receiverAccountId())) {
+            throw new TransactionReceiverNotFoundException("Счет получателя не найден");
+        }
+
+        Account senderAccount = accountRepository.findById(request.senderAccountId())
+                .orElseThrow(() -> new AccountNotFoundException("Счет отправителя не найден"));
+
+        Account receiverAccount = accountRepository.findById(request.receiverAccountId())
+                .orElseThrow(() -> new AccountNotFoundException("Счет получателя не найден"));
+
+        if (!senderAccount.getCurrency().equals(receiverAccount.getCurrency())) {
+            throw new CurrencyMisMatchException("Валюта отправителя и получателя не соответствует");
+        }
+
+        transactionService.executeTransaction(request, senderAccount, receiverAccount);
     }
 
     private void validateHeader(String xRequestId) {
@@ -75,5 +102,9 @@ public class AccountService {
                 .email(request.user().getEmail())
                 .registrationDate(ZonedDateTime.now())
                 .build();
+    }
+
+    private boolean accountExists(UUID accountId) {
+        return !accountRepository.existsById(accountId);
     }
 }
