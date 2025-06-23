@@ -14,24 +14,21 @@ public record TransactionRequest(
 
         @Schema(
                 description = "UUID счёта-отправителя",
-                example = "123e4567-e89b-12d3-a456-426614174000",
-                required = true
+                example = "123e4567-e89b-12d3-a456-426614174000"
         )
         @NotNull
         UUID senderAccountId,
 
         @Schema(
                 description = "UUID счёта-получателя",
-                example = "123e4567-e89b-12d3-a456-426614174001",
-                required = true
+                example = "123e4567-e89b-12d3-a456-426614174001"
         )
         @NotNull
         UUID receiverAccountId,
 
         @Schema(
                 description = "Сумма перевода (должна быть положительной)",
-                example = "150.50",
-                required = true
+                example = "150.50"
         )
         @NotNull
         @Positive
@@ -39,8 +36,7 @@ public record TransactionRequest(
 
         @Schema(
                 description = "Валюта по стандарту ISO 4217",
-                example = "USD",
-                required = true
+                example = "USD"
         )
         @NotNull
         String currency,
