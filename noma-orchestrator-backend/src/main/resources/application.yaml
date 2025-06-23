@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: noma-orchestrator
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: admin
+    password: qwerty
+    url: jdbc:postgresql://localhost:5432/dev_noma_orchestrator
+  liquibase:
+    database-change-log-lock-table: ${spring.application.name}_DATABASECHANGELOCK
+    change-log: db.changelog/changelog-master.yaml
+server:
+  port: 9999
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  info:
+    title: My API
+    version: 1.0.0
+    description: API Documentation
+integration:
+  complex-check:
+    complex-check-url: ${COMPLEX_CHECK_URL:http://localhost:8081/check}

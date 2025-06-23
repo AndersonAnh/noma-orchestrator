@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <excludedPredefinedLibrary name="noma-orchestrator/noma-orchestrator/grafana-data/plugins/marcuscalidus-svg-panel/node_modules" />
+  </component>
+</project>
