@@ -5,7 +5,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import ru.vtb.msa.noma.orchestrator.db.entity.Transaction;
 import ru.vtb.msa.noma.orchestrator.model.TransactionDto;
-import ru.vtb.msa.noma.orchestrator.model.TransactionRequest;
 
 /**
  * MapStruct-маршрутизатор для конвертации между JPA-entity и DTO.
