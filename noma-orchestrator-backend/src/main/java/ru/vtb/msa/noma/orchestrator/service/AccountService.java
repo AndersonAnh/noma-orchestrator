@@ -4,24 +4,32 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
+import ru.vtb.msa.noma.orchestrator.db.entity.Transaction;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.AccountRepository;
+import ru.vtb.msa.noma.orchestrator.db.repositorty.TransactionRepository;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.UserRepository;
 import ru.vtb.msa.noma.orchestrator.enums.AccountStatus;
 import ru.vtb.msa.noma.orchestrator.enums.Currency;
 import ru.vtb.msa.noma.orchestrator.exception.*;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
-import ru.vtb.msa.noma.orchestrator.model.CreateAccountRequest;
-import ru.vtb.msa.noma.orchestrator.model.CreateAccountResponse;
-import ru.vtb.msa.noma.orchestrator.model.TransactionRequest;
+import ru.vtb.msa.noma.orchestrator.mapper.DtoMapper;
+import ru.vtb.msa.noma.orchestrator.model.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
+
+    private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final ComplexCheckClient complexCheckClient;
 
@@ -30,6 +38,10 @@ public class AccountService {
     private final AccountRepository accountRepository;
 
     private final TransactionService transactionService;
+
+    private final DtoMapper dtoMapper;
+
+    private final TransactionRepository transactionRepository;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         validateHeader(xRequestId);
@@ -70,6 +82,21 @@ public class AccountService {
         transactionService.executeTransaction(request, senderAccount, receiverAccount);
     }
 
+    @Transactional(readOnly = true)
+    public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {
+        validateHeader(xRequestId);
+
+        LocalDateTime from = date.atStartOfDay();                         // 2025-06-17T00:00
+        LocalDateTime to   = date.atTime(LocalTime.MAX);                  // 2025-06-17T23:59:59.999999999
+        List<TransactionDto> dtos = transactionRepository
+                .findAllByTimestampBetween(from, to)
+                .stream()
+                .map(dtoMapper::fromEntityToDto)
+                .toList();
+        return new TransactionResponse(dtos);
+    }
+
+
     private void validateHeader(String xRequestId) {
         if (xRequestId == null || xRequestId.isBlank()) {
             throw new XRequestIdNotCorrectException("Заголовок xRequestId обязателен");
@@ -95,11 +122,13 @@ public class AccountService {
     }
 
     private User createNewUser(CreateAccountRequest request) {
+        UserDto dto = request.user();   // или request.getUser() в зависимости от вашего request-контракта
+
         return User.builder()
-                .name(request.user().getName())
-                .taxId(request.user().getTaxId())
-                .phone(request.user().getPhone())
-                .email(request.user().getEmail())
+                .name(dto.getName())
+                .taxId(dto.getTaxId())
+                .phone(dto.getPhone())
+                .email(dto.getEmail())
                 .registrationDate(ZonedDateTime.now())
                 .build();
     }

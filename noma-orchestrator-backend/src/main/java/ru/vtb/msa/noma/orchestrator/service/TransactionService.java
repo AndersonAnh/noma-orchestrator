@@ -11,7 +11,7 @@ import ru.vtb.msa.noma.orchestrator.enums.TransactionStatus;
 import ru.vtb.msa.noma.orchestrator.exception.NotEnoughFundsException;
 import ru.vtb.msa.noma.orchestrator.model.TransactionRequest;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +44,7 @@ public class TransactionService {
                 .amount(request.amount())
                 .currency(request.currency())
                 .status(TransactionStatus.COMPLETED)
-                .timestamp(LocalDate.now())
+                .timestamp(LocalDateTime.now())
                 .description(request.description())
                 .build();
     }

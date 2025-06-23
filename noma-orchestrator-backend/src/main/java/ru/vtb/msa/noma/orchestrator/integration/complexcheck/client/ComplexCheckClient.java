@@ -22,6 +22,7 @@ public class ComplexCheckClient {
     private final ComplexCheckConfig complexCheckConfig;
 
     public ComplexCheckResponse complexCheck(CreateAccountRequest request) {
+
         ComplexCheckRequest checkRequest = complexCheckRequestBuilder.buildComplexCheckRequest(request);
         return restTemplate.postForObject(complexCheckConfig.getComplexCheckUrl(), checkRequest, ComplexCheckResponse.class);
     }
