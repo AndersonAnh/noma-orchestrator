@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
-import ru.vtb.msa.noma.orchestrator.db.entity.Transaction;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.AccountRepository;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.TransactionRepository;
@@ -29,7 +28,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountService {
 
-    private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final ComplexCheckClient complexCheckClient;
 

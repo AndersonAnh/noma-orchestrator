@@ -35,10 +35,10 @@ public class ComplexCheckRequestBuilder {
         var user = request.user(); // если CreateAccountRequest — record с полем UserDto user
 
         return ClientInfo.builder()
-                .fullName(user)
-                .taxId(user.taxId())
-                .phone(user.phone())
-                .email(user.email())
+                .fullName(user.getName())
+                .taxId(user.getTaxId())
+                .phone(user.getPhone())
+                .email(user.getEmail())
                 .build();
     }
 

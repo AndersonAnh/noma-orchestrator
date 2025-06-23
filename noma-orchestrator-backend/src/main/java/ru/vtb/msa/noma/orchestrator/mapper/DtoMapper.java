@@ -28,14 +28,4 @@ public interface DtoMapper {
     @Mapping(target = "description",      source = "entity.description")
     @Mapping(target = "timestamp",        expression = "java(entity.getTimestamp().toLocalDate())")
     TransactionDto fromEntityToDto(Transaction entity);
-
-    /**
-     * DTO → Entity (для записи в БД).
-     * Поля id, status, timestamp и version игнорируются.
-     */
-    @Mapping(target = "id",        ignore = true)
-    @Mapping(target = "status",    ignore = true)
-    @Mapping(target = "timestamp", ignore = true)
-    @Mapping(target = "version",   ignore = true)
-    Transaction fromDtoToEntity(TransactionRequest request);
 }

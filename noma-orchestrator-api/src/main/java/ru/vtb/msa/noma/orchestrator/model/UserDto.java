@@ -14,16 +14,16 @@ import lombok.Setter;
 public class UserDto {
         @NotNull
         @Schema(description = "Имя пользователя", example = "Ivan Ivanov")
-        String name;
+        private String name;
 
         @NotNull
         @Schema(description = "Идентификатор налогообложения (ИНН)", example = "7707083893")
-        String taxId;
+        private String taxId;
 
         @NotNull
         @Schema(description = "Телефон пользователя", example = "+71234567890")
-        String phone;
+        private String phone;
 
         @Schema(description = "Email пользователя", example = "ivan@example.com")
-        String email;
+        private String email;
 }
