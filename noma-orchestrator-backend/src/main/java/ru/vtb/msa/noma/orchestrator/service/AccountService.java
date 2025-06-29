@@ -26,12 +26,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AccountService {
 
-    private final ComplexCheckClient   complexCheckClient;
-    private final UserRepository       userRepository;
-    private final AccountRepository    accountRepository;
-    private final TransactionService   transactionService;
+    private final ComplexCheckClient complexCheckClient;
+    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
-    private final DtoMapper            dtoMapper;
+    private final DtoMapper dtoMapper;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
@@ -54,7 +54,7 @@ public class AccountService {
     public void getTransactionsProcess(String xRequestId, TransactionRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
 
-        UUID senderId   = request.senderAccountId();
+        UUID senderId = request.senderAccountId();
         UUID receiverId = request.receiverAccountId();
 
         if (!accountRepository.existsById(senderId)) {
@@ -64,7 +64,7 @@ public class AccountService {
             throw new TransactionReceiverNotFoundException("Счет получателя не найден");
         }
 
-        Account sender   = accountRepository.findById(senderId)
+        Account sender = accountRepository.findById(senderId)
                 .orElseThrow(() -> new AccountNotFoundException("Счет отправителя не найден"));
         Account receiver = accountRepository.findById(receiverId)
                 .orElseThrow(() -> new AccountNotFoundException("Счет получателя не найден"));
@@ -81,7 +81,7 @@ public class AccountService {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
 
         LocalDateTime from = date.atStartOfDay();
-        LocalDateTime to   = date.atTime(LocalTime.MAX);
+        LocalDateTime to = date.atTime(LocalTime.MAX);
 
         List<TransactionDto> dtos = transactionRepository
                 .findAllByTimestampBetween(from, to)
@@ -102,10 +102,32 @@ public class AccountService {
         return dtoMapper.accountToDto(account);
     }
 
+    public List<AccountDto> getAllAccounts(String authorizationHeader) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
+
+        return accountRepository.findAll()
+                .stream()
+                .map(dtoMapper::accountToDto)
+                .toList();
+    }
+
+    @Transactional
+    public void deleteAccountById(String authorizationHeader, String id) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
+
+        UUID uuid = UUID.fromString(id);
+
+        Account account = accountRepository.findById(uuid)
+                .orElseThrow(() -> new AccountNotFoundException("Аккаунт с id: " + id + " не найден"));
+
+        accountRepository.delete(account);
+    }
+
+
     private void complexCheckResponseProcessing(ComplexCheckResponse response) {
         var decision = response.requestResult().getDecision();
         switch (decision) {
-            case DENY        -> throw new ComplexCheckDenyException();
+            case DENY -> throw new ComplexCheckDenyException();
             case ARBITRATION -> throw new ComplexCheckArbitrationException();
         }
     }

@@ -7,12 +7,23 @@ import ru.vtb.msa.noma.orchestrator.model.*;
 import ru.vtb.msa.noma.orchestrator.service.AccountService;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 public class AccountApiController implements AccountApi {
 
     private final AccountService accountService;
+
+    @Override
+    public List<AccountDto> getAllAccounts(String authorizationHeader) {
+        return accountService.getAllAccounts(authorizationHeader);
+    }
+
+    @Override
+    public void deleteAccountById(String authorizationHeader, String id) {
+        accountService.deleteAccountById(authorizationHeader, id);
+    }
 
     @Override
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
@@ -31,6 +42,6 @@ public class AccountApiController implements AccountApi {
 
     @Override
     public AccountDto getAccountById(String authorizationHeader, String uuid) {
-        return accountService.getAccountById(authorizationHeader,uuid);
+        return accountService.getAccountById(authorizationHeader, uuid);
     }
 }

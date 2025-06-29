@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.vtb.msa.noma.orchestrator.model.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RequestMapping("api/account")
 public interface AccountApi {
@@ -76,4 +77,30 @@ public interface AccountApi {
             @PathVariable("id")
             String uuid
     );
+
+    @GetMapping("getAllAccounts/account")
+    @Operation(description = "Метод отвечает за получение списка аккаунтов")
+    List<AccountDto> getAllAccounts(
+            @Parameter(
+                    description = "UUID для авторизации внутри системы",
+                    required = true,
+                    in = ParameterIn.HEADER,
+                    name = MsaAdditionalHeaders.X_AUTH_TOKEN
+            )
+            @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
+            String authorizationHeader
+    );
+
+    @DeleteMapping("deleteAccountById/{id}")
+    @Operation(description = "Метод отвечает за удаление аккаунта")
+    void deleteAccountById(
+            @Parameter(
+                    description = "UUID для авторизации внутри системы",
+                    required = true,
+                    in = ParameterIn.HEADER,
+                    name = MsaAdditionalHeaders.X_AUTH_TOKEN
+            )
+            @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
+            String authorizationHeader,
+            @PathVariable String id);
 }
