@@ -8,7 +8,6 @@ import ru.vtb.msa.noma.orchestrator.enums.Currency;
 import ru.vtb.msa.noma.orchestrator.model.*;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING,
