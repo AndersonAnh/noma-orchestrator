@@ -24,8 +24,6 @@ public interface DtoMapper {
     )
     TransactionDto transactionToDto(Transaction entity);
 
-    List<TransactionDto> transactionToDtos(List<Transaction> entities);
-
     /* ---------- USER: DTO → entity и entity → DTO ---------- */
 
     // DTO → entity
@@ -70,6 +68,4 @@ public interface DtoMapper {
     )
     @Mapping(target = "createdAt", source = "account.createdAt")
     AccountDto accountToDto(Account account);
-
-    List<AccountDto> accountToDtos(List<Account> accounts);
 }
