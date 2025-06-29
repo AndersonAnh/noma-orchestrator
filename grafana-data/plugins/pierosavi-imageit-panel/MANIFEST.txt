@@ -1,0 +1,38 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "community",
+  "signedByOrg": "pierosavi",
+  "signedByOrgName": "pierosavi",
+  "plugin": "pierosavi-imageit-panel",
+  "version": "1.0.7",
+  "time": 1650814507547,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "module.js.map": "880a76db99b67645f83a3a238a018586791ae74e754b763f2eb129e3d1e3c712",
+    "img/imageit_sensor.png": "3c3b10618251e12e849e5c46bc8a79afd4784b2d24e742445f4482a583901658",
+    "img/imageit_logo.png": "958b982df9d35d68d6319cd5e4826df30f6ba946643530e140167f00a56c97aa",
+    "img/imageit_example.png": "c855524c4b3eb8d6ed1bd2225126fc09f30bf83bdc9c4459d2642577586a803e",
+    "img/imageit_mapping.png": "106313a6becb5ba90d881b58d649e966b92a463716de6cc148744b33dc403bd2",
+    "CHANGELOG.md": "ccf16fd32cbe04203bc46e011b0775996a0d7e8034340e90fd1df86d10e01f3e",
+    "LICENSE": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+    "module.js": "1174df87249b7de553719899d293e005752d01189f2a65274fedd840d2b0d1fa",
+    "plugin.json": "15ac2613acb7e547eb27336f4b4ab65abdb9373bd24cbcf231715fb8c557b3f6",
+    "README.md": "4dcf8bade3ae5f16b589326941f0500ce644c81a6730bf914a363f4cc1fe4329",
+    "module.js.LICENSE.txt": "deae7301b4069de1046b5f5f4fdac53130c7701b5c813733b7344f2f1bf30796"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.10
+Comment: https://openpgpjs.org
+
+wrcEARMKAAYFAmJlbisAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm50L7AgQItuK79vjT2d1wqbZUfOlXrCRXCFOgWWpLwVwgrBkNgopweAiG
+yVW/FJDo6IHu1UpsVa66u3XvS+gGmSUJet1d1wIGNbO99naWwaay95Km7s7f
+SEqMLRXAzSjo87rczI1sHckMEgswXTo5F5SZ2Urkik7y2Z2nqCLa+h88CPTR
+VR5KzeQ=
+=mTFL
+-----END PGP SIGNATURE-----

@@ -3,10 +3,7 @@ package ru.vtb.msa.noma.orchestrator.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vtb.msa.noma.orchestrator.AccountApi;
-import ru.vtb.msa.noma.orchestrator.model.CreateAccountRequest;
-import ru.vtb.msa.noma.orchestrator.model.CreateAccountResponse;
-import ru.vtb.msa.noma.orchestrator.model.TransactionRequest;
-import ru.vtb.msa.noma.orchestrator.model.TransactionResponse;
+import ru.vtb.msa.noma.orchestrator.model.*;
 import ru.vtb.msa.noma.orchestrator.service.AccountService;
 
 import java.time.LocalDate;
@@ -30,5 +27,10 @@ public class AccountApiController implements AccountApi {
     @Override
     public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {
         return accountService.getTransactionByDate(xRequestId, date);
+    }
+
+    @Override
+    public AccountDto getAccountById(String authorizationHeader, String uuid) {
+        return accountService.getAccountById(authorizationHeader,uuid);
     }
 }
