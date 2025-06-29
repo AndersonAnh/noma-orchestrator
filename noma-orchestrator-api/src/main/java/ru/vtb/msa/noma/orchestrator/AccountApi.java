@@ -6,10 +6,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import ru.vtb.msa.noma.orchestrator.model.CreateAccountRequest;
-import ru.vtb.msa.noma.orchestrator.model.CreateAccountResponse;
-import ru.vtb.msa.noma.orchestrator.model.TransactionRequest;
-import ru.vtb.msa.noma.orchestrator.model.TransactionResponse;
+import ru.vtb.msa.noma.orchestrator.model.*;
 
 import java.time.LocalDate;
 
@@ -58,5 +55,25 @@ public interface AccountApi {
             @PathVariable("date")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate date
+    );
+
+    @GetMapping("getAccountById/{id}")
+    @Operation(description = "Метод отвечает за получение аккаунта")
+    AccountDto getAccountById(
+            @Parameter(
+                    description = "UUID для авторизации внутри системы",
+                    required = true,
+                    in = ParameterIn.HEADER,
+                    name = MsaAdditionalHeaders.X_AUTH_TOKEN
+            )
+            @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
+            String authorizationHeader,
+
+            @Parameter(
+                    description = "Id запрашиваемого аккаунта"
+
+            )
+            @PathVariable("id")
+            String uuid
     );
 }

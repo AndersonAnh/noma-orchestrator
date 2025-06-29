@@ -51,7 +51,8 @@ public class GlobalExceptionHandler {
 
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler({TransactionSenderNotFoundException.class, TransactionReceiverNotFoundException.class})
+    @ExceptionHandler({TransactionSenderNotFoundException.class, TransactionReceiverNotFoundException.class,
+            AccountNotFoundException.class})
     protected ErrorDto handleCheckIdAccount(Exception exception) {
         log.warn(exception.getMessage(), exception);
         return ErrorDto.builder()
