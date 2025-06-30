@@ -102,5 +102,21 @@ public interface AccountApi {
             )
             @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
             String authorizationHeader,
-            @PathVariable String id);
+            @PathVariable String id
+    );
+
+    @PutMapping("updateAccountById/{id}")
+    @Operation(description = "Метод отвечает за обновление аккаунта")
+    AccountDto updateAccountById(
+            @Parameter(
+                    description = "UUID для авторизации внутри системы",
+                    required = true,
+                    in = ParameterIn.HEADER,
+                    name = MsaAdditionalHeaders.X_AUTH_TOKEN
+            )
+            @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
+            String authorizationHeader,
+            @PathVariable String id,
+            @RequestBody AccountDto accountDto
+    );
 }
