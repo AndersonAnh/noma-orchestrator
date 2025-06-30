@@ -8,6 +8,8 @@ import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.AccountRepository;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.TransactionRepository;
 import ru.vtb.msa.noma.orchestrator.db.repositorty.UserRepository;
+import ru.vtb.msa.noma.orchestrator.enums.AccountStatus;
+import ru.vtb.msa.noma.orchestrator.enums.Currency;
 import ru.vtb.msa.noma.orchestrator.exception.*;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
@@ -86,7 +88,6 @@ public class AccountService {
         List<TransactionDto> dtos = transactionRepository
                 .findAllByTimestampBetween(from, to)
                 .stream()
-                // вместо fromEntityToDto() — вызываем transactionToDto()
                 .map(dtoMapper::transactionToDto)
                 .collect(Collectors.toList());
 
@@ -123,6 +124,30 @@ public class AccountService {
         accountRepository.delete(account);
     }
 
+    @Transactional
+    public AccountDto updateAccountById(String authorizationHeader, String id, AccountDto accountDto) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
+
+        UUID accountId = UUID.fromString(id);
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(
+                        "Аккаунт с id: " + id + " не найден"));
+        User user = account.getUser();
+
+        dtoMapper.updateUserFromDto(accountDto.user(), user);
+        userRepository.save(user);
+
+        account.setBalance(accountDto.balance());
+        account.setCurrency(
+                Currency.valueOf(accountDto.currency().toUpperCase())
+        );
+        account.setStatus(
+                AccountStatus.valueOf(accountDto.status())
+        );
+
+        Account updated = accountRepository.save(account);
+        return dtoMapper.accountToDto(updated);
+    }
 
     private void complexCheckResponseProcessing(ComplexCheckResponse response) {
         var decision = response.requestResult().getDecision();

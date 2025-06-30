@@ -26,6 +26,11 @@ public class AccountApiController implements AccountApi {
     }
 
     @Override
+    public AccountDto updateAccountById(String authorizationHeader, String id, AccountDto accountDto) {
+        return accountService.updateAccountById(authorizationHeader, id,accountDto);
+    }
+
+    @Override
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         return accountService.createAccount(xRequestId, request);
     }

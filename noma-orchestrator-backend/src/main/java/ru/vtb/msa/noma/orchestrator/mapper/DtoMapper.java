@@ -3,6 +3,7 @@ package ru.vtb.msa.noma.orchestrator.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
+import org.mapstruct.MappingTarget;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
 import ru.vtb.msa.noma.orchestrator.db.entity.Transaction;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
@@ -27,11 +28,14 @@ public interface DtoMapper {
 
     /* ---------- USER: DTO → entity и entity → DTO ---------- */
 
-    // DTO → entity
+    // DTO → entity (создание)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "registrationDate", expression = "java(ZonedDateTime.now())")
     @Mapping(target = "version", ignore = true)
     User toUser(UserDto dto);
+
+    // Обновление существующего User из DTO
+    void updateUserFromDto(UserDto dto, @MappingTarget User entity);
 
     // entity → DTO
     UserDto userToDto(User user);
@@ -41,7 +45,7 @@ public interface DtoMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", source = "user")
     @Mapping(target = "balance", source = "request.balance")
-    @Mapping(target = "currency", expression = "java(Currency.valueOf(request.currency()))")
+    @Mapping(target = "currency", expression = "java(Currency.valueOf(request.currency().toUpperCase()))")
     @Mapping(target = "status", constant = "ACTIVE")
     @Mapping(target = "createdAt", expression = "java(ZonedDateTime.now())")
     @Mapping(target = "version", ignore = true)
