@@ -1,4 +1,4 @@
-package ru.vtb.msa.noma.orchestrator.db.repositorty;
+package ru.vtb.msa.noma.orchestrator.db.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;

@@ -11,5 +11,4 @@ public class NomaOrchestratorApplication {
     public static void main(String[] args) {
         SpringApplication.run(NomaOrchestratorApplication.class, args);
     }
-
 }

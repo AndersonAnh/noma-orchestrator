@@ -12,18 +12,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDto {
-        @NotNull
-        @Schema(description = "Имя пользователя", example = "Ivan Ivanov")
-        private String name;
+    @NotNull
+    @Schema(description = "Имя пользователя", example = "Ivan Ivanov")
+    private String name;
 
-        @NotNull
-        @Schema(description = "Идентификатор налогообложения (ИНН)", example = "7707083893")
-        private String taxId;
+    @NotNull
+    @Schema(description = "Идентификатор налогообложения (ИНН)", example = "7707083893")
+    private String taxId;
 
-        @NotNull
-        @Schema(description = "Телефон пользователя", example = "+71234567890")
-        private String phone;
+    @NotNull
+    @Schema(description = "Телефон пользователя", example = "+71234567890")
+    private String phone;
 
-        @Schema(description = "Email пользователя", example = "ivan@example.com")
-        private String email;
+    @Schema(description = "Email пользователя", example = "ivan@example.com")
+    private String email;
 }
