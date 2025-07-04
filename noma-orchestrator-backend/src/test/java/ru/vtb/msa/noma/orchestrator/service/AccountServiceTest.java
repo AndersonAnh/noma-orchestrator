@@ -158,7 +158,6 @@ public class AccountServiceTest {
 
     @Test
     void shouldProcessTransactionsWhenAllValid() {
-        String xRequestId = "X-Req";
         UUID senderId = UUID.randomUUID();
         UUID receiverId = UUID.randomUUID();
         TransactionRequest txRequest = new TransactionRequest(senderId, receiverId, 25.0, "RUB", "Тест транзакции");
@@ -171,7 +170,7 @@ public class AccountServiceTest {
         when(accountRepository.findById(senderId)).thenReturn(Optional.of(sender));
         when(accountRepository.findById(receiverId)).thenReturn(Optional.of(receiver));
 
-        accountService.getTransactionsProcess(xRequestId, txRequest);
+        accountService.getTransactionsProcess(validXRequestId, txRequest);
 
         verify(transactionService).executeTransaction(txRequest, sender, receiver);
     }
