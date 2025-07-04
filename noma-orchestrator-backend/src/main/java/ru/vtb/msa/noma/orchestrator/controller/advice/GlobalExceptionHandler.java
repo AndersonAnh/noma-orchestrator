@@ -7,9 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.vtb.msa.noma.orchestrator.dto.ErrorDto;
-import ru.vtb.msa.noma.orchestrator.exception.ComplexCheckArbitrationException;
-import ru.vtb.msa.noma.orchestrator.exception.ComplexCheckDenyException;
-import ru.vtb.msa.noma.orchestrator.exception.XRequestIdNotCorrectException;
+import ru.vtb.msa.noma.orchestrator.exception.*;
 
 @Slf4j
 @ControllerAdvice
@@ -50,4 +48,31 @@ public class GlobalExceptionHandler {
                 .message("Произошла внутренняя ошибка при выполнении операции. Создайте обращение в службу поддержки")
                 .build();
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({TransactionSenderNotFoundException.class, TransactionReceiverNotFoundException.class,
+            AccountNotFoundException.class})
+    protected ErrorDto handleCheckIdAccount(Exception exception) {
+        log.warn(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("404")
+                .header("Произошла внутренняя ошибка при выполнении операции. Создайте обращение в службу поддержки")
+                .message("Произошла внутренняя ошибка при выполнении операции. Создайте обращение в службу поддержки")
+                .build();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(NotEnoughFundsException.class)
+    protected ErrorDto handleNotEnoughFundsException(Exception exception) {
+        log.warn(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("400")
+                .header("Произошла внутренняя ошибка при выполнении операции. Создайте обращение в службу поддержки")
+                .message("Недостаточно средств")
+                .build();
+    }
 }
+
+

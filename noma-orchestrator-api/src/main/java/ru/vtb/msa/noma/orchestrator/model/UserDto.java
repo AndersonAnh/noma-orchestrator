@@ -1,19 +1,29 @@
 package ru.vtb.msa.noma.orchestrator.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+
+@Schema(description = "User data transfer object")
 @Builder
+@Getter
+@Setter
 public class UserDto {
     @NotNull
-    //@JsonProperty("name")
+    @Schema(description = "Имя пользователя", example = "Ivan Ivanov")
     private String name;
+
     @NotNull
+    @Schema(description = "Идентификатор налогообложения (ИНН)", example = "7707083893")
     private String taxId;
+
     @NotNull
+    @Schema(description = "Телефон пользователя", example = "+71234567890")
     private String phone;
+
+    @Schema(description = "Email пользователя", example = "ivan@example.com")
     private String email;
 }

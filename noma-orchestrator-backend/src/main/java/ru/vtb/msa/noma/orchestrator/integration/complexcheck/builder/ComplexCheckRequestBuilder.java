@@ -32,11 +32,13 @@ public class ComplexCheckRequestBuilder {
     }
 
     private ClientInfo buildClientInfo(CreateAccountRequest request) {
+        var user = request.user(); // если CreateAccountRequest — record с полем UserDto user
+
         return ClientInfo.builder()
-                .fullName(request.user().getName())
-                .taxId(request.user().getTaxId())
-                .phone(request.user().getPhone())
-                .email(request.user().getEmail())
+                .fullName(user.getName())
+                .taxId(user.getTaxId())
+                .phone(user.getPhone())
+                .email(user.getEmail())
                 .build();
     }
 
