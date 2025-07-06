@@ -91,9 +91,9 @@ public interface AccountApi {
             String authorizationHeader
     );
 
-    @DeleteMapping("deleteAccountById/{id}")
+    @DeleteMapping("deleteAccount/{id}")
     @Operation(description = "Метод отвечает за удаление аккаунта")
-    void deleteAccountById(
+    void deleteAccount(
             @Parameter(
                     description = "UUID для авторизации внутри системы",
                     required = true,
@@ -102,12 +102,13 @@ public interface AccountApi {
             )
             @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
             String authorizationHeader,
+            @Parameter(description = "Id удаляемого аккаунта")
             @PathVariable String id
     );
 
-    @PutMapping("updateAccountById/{id}")
+    @PutMapping("updateAccount/{id}")
     @Operation(description = "Метод отвечает за обновление аккаунта")
-    AccountDto updateAccountById(
+    UpdateAccountResponse updateAccount(
             @Parameter(
                     description = "UUID для авторизации внутри системы",
                     required = true,
@@ -116,7 +117,9 @@ public interface AccountApi {
             )
             @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
             String authorizationHeader,
+            @Parameter(description = "Id обновляемого аккаунта")
             @PathVariable String id,
-            @RequestBody AccountDto accountDto
+            @Parameter(description = "Тело запроса на обновление аккаунта")
+            @RequestBody UpdateAccountRequest request
     );
 }
