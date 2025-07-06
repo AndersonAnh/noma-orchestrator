@@ -8,8 +8,6 @@ import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repository.AccountRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.TransactionRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.UserRepository;
-import ru.vtb.msa.noma.orchestrator.enums.AccountStatus;
-import ru.vtb.msa.noma.orchestrator.enums.Currency;
 import ru.vtb.msa.noma.orchestrator.exception.*;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
@@ -113,40 +111,29 @@ public class AccountService {
     }
 
     @Transactional
-    public void deleteAccountById(String authorizationHeader, String id) {
+    public void deleteAccount(String authorizationHeader, String id) {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
-        UUID uuid = UUID.fromString(id);
-
-        Account account = accountRepository.findById(uuid)
-                .orElseThrow(() -> new AccountNotFoundException("Аккаунт с id: " + id + " не найден"));
-
-        accountRepository.delete(account);
+        accountRepository.deleteById(UUID.fromString(id));
     }
 
     @Transactional
-    public AccountDto updateAccountById(String authorizationHeader, String id, AccountDto accountDto) {
+    public UpdateAccountResponse updateAccount(String authorizationHeader, String id, UpdateAccountRequest request) {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
         UUID accountId = UUID.fromString(id);
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(
                         "Аккаунт с id: " + id + " не найден"));
+
         User user = account.getUser();
 
-        dtoMapper.updateUserFromDto(accountDto.user(), user);
-        userRepository.save(user);
+        dtoMapper.updateUserFromDto(request.account().user(), user);
+        User savedUser = userRepository.save(user);
 
-        account.setBalance(accountDto.balance());
-        account.setCurrency(
-                Currency.valueOf(accountDto.currency().toUpperCase())
-        );
-        account.setStatus(
-                AccountStatus.valueOf(accountDto.status())
-        );
-
-        Account updated = accountRepository.save(account);
-        return dtoMapper.accountToDto(updated);
+        Account updatedAccount = dtoMapper.toAccount(request, savedUser);
+        accountRepository.save(updatedAccount);
+        return new UpdateAccountResponse(dtoMapper.accountToDto(updatedAccount));
     }
 
     private void complexCheckResponseProcessing(ComplexCheckResponse response) {
