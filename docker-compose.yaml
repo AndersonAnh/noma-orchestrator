@@ -12,5 +12,26 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:2181"
+
+  kafka:
+      image: confluentinc/cp-kafka:7.4.4
+      depends_on:
+        - zookeeper
+      ports:
+        - "29092:29092"
+      environment:
+        KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+        KAFKA_BROKER_ID: 1
+        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+        ##это адрес, по которому клиенты (включая Offset Explorer) могут подключиться к брокеру Kafka.
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+
 volumes:
   postgres_data:
