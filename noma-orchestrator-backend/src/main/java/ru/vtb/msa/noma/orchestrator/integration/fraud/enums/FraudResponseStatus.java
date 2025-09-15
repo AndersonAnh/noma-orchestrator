@@ -24,5 +24,5 @@ public enum FraudResponseStatus {
     /**
      * Проверка невозможна из-за технической ошибки.
      */
-    ERROR;
+    ERROR
 }
