@@ -73,6 +73,42 @@ public class GlobalExceptionHandler {
                 .message("Недостаточно средств")
                 .build();
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(FraudDetectedException.class)
+    protected ErrorDto handleFraudDetectedException(FraudDetectedException exception) {
+        log.error(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("CONFLICT")
+                .header("Операция отклонена: мошенничество подтверждено.")
+                .message("Транзакция заблокирована из-за подтверждённого мошенничества.")
+                .build();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.PROCESSING)
+    @ExceptionHandler(FraudReviewRequiredException.class)
+    protected ErrorDto handleFraudReviewRequiredException(FraudReviewRequiredException exception) {
+        log.warn(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("PROCESSING")
+                .header("Подозрение на мошенничество.")
+                .message("Требуется ручная проверка операции.")
+                .build();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(FraudServiceException.class)
+    protected ErrorDto handleFraudServiceException(FraudServiceException exception) {
+        log.error(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("ERROR")
+                .header("Ошибка проверки мошенничества.")
+                .message("Не удалось выполнить проверку мошенничества. Попробуйте позже.")
+                .build();
+    }
 }
 
 
