@@ -1,6 +1,7 @@
 package ru.vtb.msa.noma.orchestrator.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
@@ -8,13 +9,20 @@ import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repository.AccountRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.TransactionRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.UserRepository;
-import ru.vtb.msa.noma.orchestrator.enums.AccountStatus;
-import ru.vtb.msa.noma.orchestrator.enums.Currency;
-import ru.vtb.msa.noma.orchestrator.exception.*;
+import ru.vtb.msa.noma.orchestrator.enums.TransactionProcessStatus;
+import ru.vtb.msa.noma.orchestrator.exception.AccountNotFoundException;
+import ru.vtb.msa.noma.orchestrator.exception.CurrencyMisMatchException;
+import ru.vtb.msa.noma.orchestrator.exception.TransactionReceiverNotFoundException;
+import ru.vtb.msa.noma.orchestrator.exception.TransactionSenderNotFoundException;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
+import ru.vtb.msa.noma.orchestrator.integration.fraud.client.FraudClient;
+import ru.vtb.msa.noma.orchestrator.integration.fraud.pojo.FraudResponse;
+import ru.vtb.msa.noma.orchestrator.integration.infoservice.sender.InfoServiceSender;
 import ru.vtb.msa.noma.orchestrator.mapper.DtoMapper;
 import ru.vtb.msa.noma.orchestrator.model.*;
+import ru.vtb.msa.noma.orchestrator.utils.CheckResponseUtil;
+import ru.vtb.msa.noma.orchestrator.utils.JsonUtil;
 import ru.vtb.msa.noma.orchestrator.utils.ValidateUtil;
 
 import java.time.LocalDate;
@@ -26,6 +34,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
 
     private final ComplexCheckClient complexCheckClient;
@@ -34,18 +43,19 @@ public class AccountService {
     private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
     private final DtoMapper dtoMapper;
+    private final FraudClient fraudClient;
+    private final InfoServiceSender infoServiceSender;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
 
         ComplexCheckResponse response = complexCheckClient.complexCheck(request);
-        complexCheckResponseProcessing(response);
+        CheckResponseUtil.complexCheckResponseProcessing(response);
+        log.debug("Ответ из сервиса комплексной проверки {}", JsonUtil.toJson(response));
 
-        // сохраняем нового пользователя
         User user = dtoMapper.toUser(request.user());
         user = userRepository.save(user);
 
-        // создаём и сохраняем аккаунт
         Account account = dtoMapper.toAccount(request, user);
         account = accountRepository.save(account);
 
@@ -53,29 +63,29 @@ public class AccountService {
     }
 
     @Transactional
-    public void getTransactionsProcess(String xRequestId, TransactionRequest request) {
+    public TransactionProcessResponse transactionsProcess(String xRequestId, TransactionRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
 
         UUID senderId = request.senderAccountId();
         UUID receiverId = request.receiverAccountId();
 
-        if (!accountRepository.existsById(senderId)) {
-            throw new TransactionSenderNotFoundException("Счет отправителя не найден");
-        }
-        if (!accountRepository.existsById(receiverId)) {
-            throw new TransactionReceiverNotFoundException("Счет получателя не найден");
-        }
-
         Account sender = accountRepository.findById(senderId)
-                .orElseThrow(() -> new AccountNotFoundException("Счет отправителя не найден"));
+                .orElseThrow(() -> new TransactionSenderNotFoundException("Счет отправителя не найден"));
         Account receiver = accountRepository.findById(receiverId)
-                .orElseThrow(() -> new AccountNotFoundException("Счет получателя не найден"));
+                .orElseThrow(() -> new TransactionReceiverNotFoundException("Счет получателя не найден"));
 
         if (!sender.getCurrency().equals(receiver.getCurrency())) {
             throw new CurrencyMisMatchException("Валюта отправителя и получателя не соответствует");
         }
 
+        FraudResponse fraudResponse = fraudClient.checkFraud(sender, receiver);
+
+        CheckResponseUtil.handleFraudResponse(fraudResponse);
+        log.debug("Ответ из сервиса проверки на мошенничество {}", JsonUtil.toJson(fraudResponse));
+
         transactionService.executeTransaction(request, sender, receiver);
+
+        return new TransactionProcessResponse(TransactionProcessStatus.SUCCESS, request.description());
     }
 
     @Transactional(readOnly = true)
@@ -97,10 +107,9 @@ public class AccountService {
     public AccountDto getAccountById(String authorizationHeader, String uuid) {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
-        Account account = accountRepository.findById(UUID.fromString(uuid))
+        return accountRepository.findById(UUID.fromString(uuid))
+                .map(dtoMapper::accountToDto)
                 .orElseThrow(() -> new AccountNotFoundException("Аккаунт не найден"));
-
-        return dtoMapper.accountToDto(account);
     }
 
     public List<AccountDto> getAllAccounts(String authorizationHeader) {
@@ -113,47 +122,33 @@ public class AccountService {
     }
 
     @Transactional
-    public void deleteAccountById(String authorizationHeader, String id) {
+    public void deleteAccount(String authorizationHeader, String id) {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
-
-        UUID uuid = UUID.fromString(id);
-
-        Account account = accountRepository.findById(uuid)
-                .orElseThrow(() -> new AccountNotFoundException("Аккаунт с id: " + id + " не найден"));
-
-        accountRepository.delete(account);
+        accountRepository.deleteById(UUID.fromString(id));
     }
 
     @Transactional
-    public AccountDto updateAccountById(String authorizationHeader, String id, AccountDto accountDto) {
+    public UpdateAccountResponse updateAccount(String authorizationHeader, String id, UpdateAccountRequest request) {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
-        UUID accountId = UUID.fromString(id);
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountNotFoundException(
-                        "Аккаунт с id: " + id + " не найден"));
-        User user = account.getUser();
+        Account account = accountRepository.findById(UUID.fromString(id))
+                .orElseThrow(() ->
+                        new AccountNotFoundException("Аккаунт с id: " + id + " не найден")
+                );
 
-        dtoMapper.updateUserFromDto(accountDto.user(), user);
+        User user = account.getUser();
+        dtoMapper.updateUserFromDto(request.account().user(), user);
         userRepository.save(user);
 
-        account.setBalance(accountDto.balance());
-        account.setCurrency(
-                Currency.valueOf(accountDto.currency().toUpperCase())
-        );
-        account.setStatus(
-                AccountStatus.valueOf(accountDto.status())
-        );
+        Account updatedAccount = dtoMapper.toAccount(request, user);
+        accountRepository.save(updatedAccount);
 
-        Account updated = accountRepository.save(account);
-        return dtoMapper.accountToDto(updated);
+        return new UpdateAccountResponse(
+                dtoMapper.accountToDto(updatedAccount)
+        );
     }
 
-    private void complexCheckResponseProcessing(ComplexCheckResponse response) {
-        var decision = response.requestResult().getDecision();
-        switch (decision) {
-            case DENY -> throw new ComplexCheckDenyException();
-            case ARBITRATION -> throw new ComplexCheckArbitrationException();
-        }
+    public void accountUpdatedEvent(AccountUpdatedEventRequest account) {
+        infoServiceSender.send(account);
     }
 }

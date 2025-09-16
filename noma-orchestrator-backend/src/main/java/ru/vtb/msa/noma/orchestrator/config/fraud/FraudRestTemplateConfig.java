@@ -1,14 +1,14 @@
-package ru.vtb.msa.noma.orchestrator.config;
+package ru.vtb.msa.noma.orchestrator.config.fraud;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class ComplexCheckRestTemplateConfig {
+public class FraudRestTemplateConfig {
 
-    @Bean("complexCheckRestTemplate")
-    public RestTemplate complexCheckRestTemplate() {
+    @Bean("fraudRestTemplate")
+    public RestTemplate fraudRestTemplate() {
         return new RestTemplate();
     }
 }

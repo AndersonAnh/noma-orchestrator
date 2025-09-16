@@ -1,4 +1,4 @@
-package ru.vtb.msa.noma.orchestrator.config;
+package ru.vtb.msa.noma.orchestrator.config.swagger;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

@@ -21,13 +21,18 @@ public class AccountApiController implements AccountApi {
     }
 
     @Override
-    public void deleteAccountById(String authorizationHeader, String id) {
-        accountService.deleteAccountById(authorizationHeader, id);
+    public void deleteAccount(String authorizationHeader, String id) {
+        accountService.deleteAccount(authorizationHeader, id);
     }
 
     @Override
-    public AccountDto updateAccountById(String authorizationHeader, String id, AccountDto accountDto) {
-        return accountService.updateAccountById(authorizationHeader, id,accountDto);
+    public UpdateAccountResponse updateAccount(String authorizationHeader, String id, UpdateAccountRequest updateAccountRequest) {
+        return accountService.updateAccount(authorizationHeader, id, updateAccountRequest);
+    }
+
+    @Override
+    public void accountUpdatedEvent(AccountUpdatedEventRequest account) {
+        accountService.accountUpdatedEvent(account);
     }
 
     @Override
@@ -36,8 +41,8 @@ public class AccountApiController implements AccountApi {
     }
 
     @Override
-    public void getTransactionProcess(String xRequestId, TransactionRequest request) {
-        accountService.getTransactionsProcess(xRequestId, request);
+    public TransactionProcessResponse transactionProcess(String xRequestId, TransactionRequest request) {
+        return accountService.transactionsProcess(xRequestId, request);
     }
 
     @Override

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import ru.vtb.msa.noma.orchestrator.model.*;
 
@@ -24,15 +25,22 @@ public interface AccountApi {
             @RequestBody CreateAccountRequest request
     );
 
-    @PostMapping("/transactions")
-    @Operation(description = "Метод реализовывает процесс перевода средств между счетами клиентов с резервированием средств")
-    void getTransactionProcess(
+    @PostMapping(
+            path = "/transactions",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(description = "Перевод средств с одного аккаунта на другой")
+    TransactionProcessResponse transactionProcess(
             @Parameter(description = "UUID для авторизации внутри системы")
             @RequestHeader(MsaAdditionalHeaders.X_REQUEST_ID)
             String xRequestId,
+
             @Parameter(description = "Тело запроса")
-            @RequestBody TransactionRequest request
+            @RequestBody
+            TransactionRequest request
     );
+
 
     @GetMapping("getTransactionsByDate/{date}")
     @Operation(description = "Метод отвечает за получение транзакций по дате")
@@ -91,9 +99,9 @@ public interface AccountApi {
             String authorizationHeader
     );
 
-    @DeleteMapping("deleteAccountById/{id}")
+    @DeleteMapping("deleteAccount/{id}")
     @Operation(description = "Метод отвечает за удаление аккаунта")
-    void deleteAccountById(
+    void deleteAccount(
             @Parameter(
                     description = "UUID для авторизации внутри системы",
                     required = true,
@@ -102,12 +110,13 @@ public interface AccountApi {
             )
             @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
             String authorizationHeader,
+            @Parameter(description = "Id удаляемого аккаунта")
             @PathVariable String id
     );
 
-    @PutMapping("updateAccountById/{id}")
+    @PutMapping("updateAccount/{id}")
     @Operation(description = "Метод отвечает за обновление аккаунта")
-    AccountDto updateAccountById(
+    UpdateAccountResponse updateAccount(
             @Parameter(
                     description = "UUID для авторизации внутри системы",
                     required = true,
@@ -116,7 +125,14 @@ public interface AccountApi {
             )
             @RequestHeader(MsaAdditionalHeaders.X_AUTH_TOKEN)
             String authorizationHeader,
+            @Parameter(description = "Id обновляемого аккаунта")
             @PathVariable String id,
-            @RequestBody AccountDto accountDto
+            @Parameter(description = "Тело запроса на обновление аккаунта")
+            @RequestBody UpdateAccountRequest request
+    );
+
+    @PostMapping("/infoaccounts")
+    void accountUpdatedEvent (
+            @RequestBody AccountUpdatedEventRequest account
     );
 }

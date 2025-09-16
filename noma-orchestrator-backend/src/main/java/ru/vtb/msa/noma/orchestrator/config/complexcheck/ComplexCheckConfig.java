@@ -1,4 +1,4 @@
-package ru.vtb.msa.noma.orchestrator.config;
+package ru.vtb.msa.noma.orchestrator.config.complexcheck;
 
 import lombok.Getter;
 import lombok.Setter;

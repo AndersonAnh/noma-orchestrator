@@ -170,7 +170,7 @@ public class AccountServiceTest {
         when(accountRepository.findById(senderId)).thenReturn(Optional.of(sender));
         when(accountRepository.findById(receiverId)).thenReturn(Optional.of(receiver));
 
-        accountService.getTransactionsProcess(validXRequestId, txRequest);
+        accountService.transactionsProcess(validXRequestId, txRequest);
 
         verify(transactionService).executeTransaction(txRequest, sender, receiver);
     }
@@ -182,7 +182,7 @@ public class AccountServiceTest {
         TransactionRequest txRequest = new TransactionRequest(senderId, receiverId, 25.0, "RUB", "Тест");
         when(accountRepository.existsById(senderId)).thenReturn(false);
         assertThrows(TransactionSenderNotFoundException.class,
-                () -> accountService.getTransactionsProcess(validXRequestId, txRequest));
+                () -> accountService.transactionsProcess(validXRequestId, txRequest));
     }
 
     @Test
@@ -193,7 +193,7 @@ public class AccountServiceTest {
         when(accountRepository.existsById(senderId)).thenReturn(true);
         when(accountRepository.existsById(receiverId)).thenReturn(false);
         assertThrows(TransactionReceiverNotFoundException.class,
-                () -> accountService.getTransactionsProcess(validXRequestId, txRequest));
+                () -> accountService.transactionsProcess(validXRequestId, txRequest));
     }
 
     @Test
@@ -209,6 +209,6 @@ public class AccountServiceTest {
         when(accountRepository.findById(receiverId)).thenReturn(Optional.of(receiver));
         receiver.setCurrency(Currency.USD);
         assertThrows(CurrencyMisMatchException.class,
-                () -> accountService.getTransactionsProcess(validXRequestId, txRequest));
+                () -> accountService.transactionsProcess(validXRequestId, txRequest));
     }
 }
