@@ -15,10 +15,14 @@
     <name>noma-orchestrator-backend</name>
 
     <dependencies>
-        <!-- API contract -->
         <dependency>
             <groupId>ru.vtb.msa</groupId>
             <artifactId>noma-orchestrator-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ru.vtb.msa</groupId>
+            <artifactId>kafka-dto</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Spring Boot starters -->
