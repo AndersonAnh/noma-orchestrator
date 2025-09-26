@@ -57,6 +57,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
         </dependency>
+      <!--  <dependency>
+            <groupId>ru.vtb.msa</groupId>
+            <artifactId>noma-orchestrator-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>-->
+
     </dependencies>
 
     <dependencyManagement>

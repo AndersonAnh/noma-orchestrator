@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import ru.vtb.msa.noma.orchestrator.integration.infoservice.sender.pojo.InfoRequestDto;
+import ru.vtb.msa.InfoRequestDto;
 import ru.vtb.msa.noma.orchestrator.model.AccountUpdatedEventRequest;
 
 @Service
@@ -12,7 +12,7 @@ import ru.vtb.msa.noma.orchestrator.model.AccountUpdatedEventRequest;
 @Slf4j
 public class InfoServiceSender {
 
-    private final static String SYSTEM_MNEMO_CODE = "NOMA";
+    private final static String SYSTEM_MNEMO_CODE = "NOMAA";
     private final static String SYSTEM_NUMBER = "3131";
     private final KafkaTemplate<String, InfoRequestDto> kafkaTemplate;
 
