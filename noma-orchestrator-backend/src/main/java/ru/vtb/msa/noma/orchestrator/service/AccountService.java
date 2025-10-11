@@ -1,136 +1,154 @@
 package ru.vtb.msa.noma.orchestrator.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
-import ru.vtb.msa.noma.orchestrator.db.repositorty.AccountRepository;
-import ru.vtb.msa.noma.orchestrator.db.repositorty.TransactionRepository;
-import ru.vtb.msa.noma.orchestrator.db.repositorty.UserRepository;
-import ru.vtb.msa.noma.orchestrator.enums.AccountStatus;
-import ru.vtb.msa.noma.orchestrator.enums.Currency;
-import ru.vtb.msa.noma.orchestrator.exception.*;
+import ru.vtb.msa.noma.orchestrator.db.repository.AccountRepository;
+import ru.vtb.msa.noma.orchestrator.db.repository.TransactionRepository;
+import ru.vtb.msa.noma.orchestrator.db.repository.UserRepository;
+import ru.vtb.msa.noma.orchestrator.enums.TransactionProcessStatus;
+import ru.vtb.msa.noma.orchestrator.exception.AccountNotFoundException;
+import ru.vtb.msa.noma.orchestrator.exception.CurrencyMisMatchException;
+import ru.vtb.msa.noma.orchestrator.exception.TransactionReceiverNotFoundException;
+import ru.vtb.msa.noma.orchestrator.exception.TransactionSenderNotFoundException;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
+import ru.vtb.msa.noma.orchestrator.integration.fraud.client.FraudClient;
+import ru.vtb.msa.noma.orchestrator.integration.fraud.pojo.FraudResponse;
+import ru.vtb.msa.noma.orchestrator.integration.infoservice.sender.InfoServiceSender;
 import ru.vtb.msa.noma.orchestrator.mapper.DtoMapper;
 import ru.vtb.msa.noma.orchestrator.model.*;
+import ru.vtb.msa.noma.orchestrator.utils.CheckResponseUtil;
+import ru.vtb.msa.noma.orchestrator.utils.JsonUtil;
+import ru.vtb.msa.noma.orchestrator.utils.ValidateUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
 
-
     private final ComplexCheckClient complexCheckClient;
-
     private final UserRepository userRepository;
-
     private final AccountRepository accountRepository;
-
     private final TransactionService transactionService;
-
-    private final DtoMapper dtoMapper;
-
     private final TransactionRepository transactionRepository;
+    private final DtoMapper dtoMapper;
+    private final FraudClient fraudClient;
+    private final InfoServiceSender infoServiceSender;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
-        validateHeader(xRequestId);
+        ValidateUtil.validateXRequestIdHeader(xRequestId);
 
-        ComplexCheckResponse complexCheckResponse = complexCheckClient.complexCheck(request);
-        complexCheckResponseProcessing(complexCheckResponse);
+        ComplexCheckResponse response = complexCheckClient.complexCheck(request);
+        CheckResponseUtil.complexCheckResponseProcessing(response);
+        log.debug("Ответ из сервиса комплексной проверки {}", JsonUtil.toJson(response));
 
-        User user = createNewUser(request);
-        User savedUser = userRepository.save(user);
+        User user = dtoMapper.toUser(request.user());
+        user = userRepository.save(user);
 
-        Account account = createNewAccount(request, savedUser);
-        Account savedAccount = accountRepository.save(account);
+        Account account = dtoMapper.toAccount(request, user);
+        account = accountRepository.save(account);
 
-        return new CreateAccountResponse(request.user(), savedAccount.getStatus().name());
+        return new CreateAccountResponse(request.user(), account.getStatus().name());
     }
 
     @Transactional
-    public void getTransactionsProcess(String xRequestId, TransactionRequest request) {
-        validateHeader(xRequestId);
+    public TransactionProcessResponse transactionsProcess(String xRequestId, TransactionRequest request) {
+        ValidateUtil.validateXRequestIdHeader(xRequestId);
 
-        if (accountExists(request.senderAccountId())) {
-            throw new TransactionSenderNotFoundException("Счет отправителя не найден");
-        }
-        if (accountExists(request.receiverAccountId())) {
-            throw new TransactionReceiverNotFoundException("Счет получателя не найден");
-        }
+        UUID senderId = request.senderAccountId();
+        UUID receiverId = request.receiverAccountId();
 
-        Account senderAccount = accountRepository.findById(request.senderAccountId())
-                .orElseThrow(() -> new AccountNotFoundException("Счет отправителя не найден"));
+        Account sender = accountRepository.findById(senderId)
+                .orElseThrow(() -> new TransactionSenderNotFoundException("Счет отправителя не найден"));
+        Account receiver = accountRepository.findById(receiverId)
+                .orElseThrow(() -> new TransactionReceiverNotFoundException("Счет получателя не найден"));
 
-        Account receiverAccount = accountRepository.findById(request.receiverAccountId())
-                .orElseThrow(() -> new AccountNotFoundException("Счет получателя не найден"));
-
-        if (!senderAccount.getCurrency().equals(receiverAccount.getCurrency())) {
+        if (!sender.getCurrency().equals(receiver.getCurrency())) {
             throw new CurrencyMisMatchException("Валюта отправителя и получателя не соответствует");
         }
 
-        transactionService.executeTransaction(request, senderAccount, receiverAccount);
+        FraudResponse fraudResponse = fraudClient.checkFraud(sender, receiver);
+
+        CheckResponseUtil.handleFraudResponse(fraudResponse);
+        log.debug("Ответ из сервиса проверки на мошенничество {}", JsonUtil.toJson(fraudResponse));
+
+        transactionService.executeTransaction(request, sender, receiver);
+
+        return new TransactionProcessResponse(TransactionProcessStatus.SUCCESS, request.description());
     }
 
     @Transactional(readOnly = true)
     public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {
-        validateHeader(xRequestId);
+        ValidateUtil.validateXRequestIdHeader(xRequestId);
 
-        LocalDateTime from = date.atStartOfDay();                         // 2025-06-17T00:00
-        LocalDateTime to   = date.atTime(LocalTime.MAX);                  // 2025-06-17T23:59:59.999999999
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to = date.atTime(LocalTime.MAX);
+
         List<TransactionDto> dtos = transactionRepository
                 .findAllByTimestampBetween(from, to)
                 .stream()
-                .map(dtoMapper::fromEntityToDto)
-                .toList();
+                .map(dtoMapper::transactionToDto)
+                .collect(Collectors.toList());
+
         return new TransactionResponse(dtos);
     }
 
+    public AccountDto getAccountById(String authorizationHeader, String uuid) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
-    private void validateHeader(String xRequestId) {
-        if (xRequestId == null || xRequestId.isBlank()) {
-            throw new XRequestIdNotCorrectException("Заголовок xRequestId обязателен");
-        }
+        return accountRepository.findById(UUID.fromString(uuid))
+                .map(dtoMapper::accountToDto)
+                .orElseThrow(() -> new AccountNotFoundException("Аккаунт не найден"));
     }
 
-    private void complexCheckResponseProcessing(ComplexCheckResponse response) {
-        var decision = response.requestResult().getDecision();
-        switch (decision) {
-            case DENY -> throw new ComplexCheckDenyException();
-            case ARBITRATION -> throw new ComplexCheckArbitrationException();
-        }
+    public List<AccountDto> getAllAccounts(String authorizationHeader) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
+
+        return accountRepository.findAll()
+                .stream()
+                .map(dtoMapper::accountToDto)
+                .toList();
     }
 
-    private Account createNewAccount(CreateAccountRequest request, User user) {
-        return Account.builder()
-                .user(user)
-                .balance(request.balance())
-                .currency(Currency.valueOf(request.currency()))
-                .status(AccountStatus.ACTIVE)
-                .createdAt(ZonedDateTime.now())
-                .build();
+    @Transactional
+    public void deleteAccount(String authorizationHeader, String id) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
+        accountRepository.deleteById(UUID.fromString(id));
     }
 
-    private User createNewUser(CreateAccountRequest request) {
-        UserDto dto = request.user();   // или request.getUser() в зависимости от вашего request-контракта
+    @Transactional
+    public UpdateAccountResponse updateAccount(String authorizationHeader, String id, UpdateAccountRequest request) {
+        ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
-        return User.builder()
-                .name(dto.getName())
-                .taxId(dto.getTaxId())
-                .phone(dto.getPhone())
-                .email(dto.getEmail())
-                .registrationDate(ZonedDateTime.now())
-                .build();
+        Account account = accountRepository.findById(UUID.fromString(id))
+                .orElseThrow(() ->
+                        new AccountNotFoundException("Аккаунт с id: " + id + " не найден")
+                );
+
+        User user = account.getUser();
+        dtoMapper.updateUserFromDto(request.account().user(), user);
+        userRepository.save(user);
+
+        Account updatedAccount = dtoMapper.toAccount(request, user);
+        accountRepository.save(updatedAccount);
+
+        return new UpdateAccountResponse(
+                dtoMapper.accountToDto(updatedAccount)
+        );
     }
 
-    private boolean accountExists(UUID accountId) {
-        return !accountRepository.existsById(accountId);
+    public void accountUpdatedEvent(AccountUpdatedEventRequest account) {
+        infoServiceSender.send(account);
     }
 }

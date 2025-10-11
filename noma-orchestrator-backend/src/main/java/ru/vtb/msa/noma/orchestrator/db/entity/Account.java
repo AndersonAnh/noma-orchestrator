@@ -34,6 +34,8 @@ public class Account {
     @Column(name = "created_at")
     private ZonedDateTime createdAt;
 
+    private ZonedDateTime updatedAt;
+
     @Version
     private Integer version;
 }
