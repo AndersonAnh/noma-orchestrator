@@ -17,6 +17,10 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: '*'
+  cache:
+    type: caffeine
+    expireAfterWrite: 24
+    maximumSize: 98
   datasource:
     driver-class-name: org.postgresql.Driver
     username: admin

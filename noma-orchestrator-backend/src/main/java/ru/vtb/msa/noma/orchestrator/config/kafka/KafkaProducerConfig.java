@@ -44,7 +44,7 @@ public class KafkaProducerConfig {
 
 
     @Bean
-    public ProducerFactory<String, InfoRequestDto> producerFactory() {
+    public ProducerFactory<String, Object> producerFactory() {
         Map<String, Object> configProps = producerConfigs();
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer);
@@ -52,7 +52,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, InfoRequestDto> kafkaTemplate() {
+    public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }
