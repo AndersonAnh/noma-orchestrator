@@ -1,8 +1,9 @@
 package ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.enums.ComplexCheckResult;
 
 @Getter
