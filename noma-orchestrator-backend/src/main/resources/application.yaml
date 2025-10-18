@@ -43,6 +43,18 @@ springdoc:
     version: 1.0.0
     description: API Documentation
 integration:
+  retry:
+    config:
+      maxAttempts: 3                      # Максимальное число попыток (первая + 2 повтора)
+      initialInterval: 2000               # Начальная задержка между попытками (2 сек)
+      multiplier: 2.0                     # Во сколько раз увеличивать задержку
+      maxInterval: 10000                  # Максимальная задержка между попытками (10 сек)
+      retryableExceptions: # Какие исключения считаются «временными» и должны ретраиться
+        - java.net.SocketTimeoutException
+        - org.springframework.web.client.ResourceAccessException
+        - java.io.IOException
+      connectTimeout: 2000 # максимальное время (мс) ожидания установки соединения с внешним сервисом
+      readTimeout: 5000 # максимальное время (мс) ожидания получения ответа от внешнего сервиса после установления соединения
   complex-check:
     complex-check-url: ${COMPLEX_CHECK_URL:http://localhost:8081/check}
   fraud:
