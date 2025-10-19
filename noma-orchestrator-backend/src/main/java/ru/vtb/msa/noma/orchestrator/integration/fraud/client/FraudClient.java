@@ -11,7 +11,6 @@ import ru.vtb.msa.noma.orchestrator.db.entity.Account;
 import ru.vtb.msa.noma.orchestrator.integration.fraud.builder.FraudRequestBuilder;
 import ru.vtb.msa.noma.orchestrator.integration.fraud.pojo.FraudRequest;
 import ru.vtb.msa.noma.orchestrator.integration.fraud.pojo.FraudResponse;
-import ru.vtb.msa.noma.orchestrator.utils.JsonUtil;
 
 @Component
 @RequiredArgsConstructor
