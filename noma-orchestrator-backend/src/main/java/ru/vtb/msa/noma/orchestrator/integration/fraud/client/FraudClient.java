@@ -3,6 +3,7 @@ package ru.vtb.msa.noma.orchestrator.integration.fraud.client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ru.vtb.msa.noma.orchestrator.config.fraud.FraudConfig;
@@ -24,16 +25,20 @@ public class FraudClient {
 
     private final FraudRequestBuilder requestBuilder;
 
+    private final RetryTemplate retryTemplate;
+
     /**
      * Отправляет в Fraud-сервис запрос по двум аккаунтам и возвращает полный FraudResponse.
      */
     public FraudResponse checkFraud(Account sender, Account receiver) {
         FraudRequest fraudRequest = requestBuilder.buildFraudRequest(sender, receiver);
-        log.debug("Запрос в сервис по проверке на мошенничество {}", JsonUtil.toJson(fraudRequest));
-        return restTemplate.postForObject(
-                fraudConfig.getFraudUrl(),
-                fraudRequest,
-                FraudResponse.class
-        );
+        return retryTemplate.execute(context -> {
+            log.info("Вызов проверки на мошенничество (попытка №{}): {}", context.getRetryCount() + 1, fraudRequest);
+            return restTemplate.postForObject(
+                    fraudConfig.getFraudUrl(),
+                    fraudRequest,
+                    FraudResponse.class
+            );
+        });
     }
 }
