@@ -1,4 +1,4 @@
-package ru.vtb.msa.noma.orchestrator.config.fraud;
+package ru.vtb.msa.noma.orchestrator.config.complexcheck;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -11,12 +11,12 @@ import ru.vtb.msa.noma.orchestrator.config.retry.IntegrationRetryProperties;
 
 @Configuration
 @RequiredArgsConstructor
-public class FraudRestTemplateConfig {
+public class ComplexCheckRestTemplateConfig {
 
     private final IntegrationRetryProperties properties;
-
-    @Bean("fraudRestTemplate")
-    public RestTemplate fraudRestTemplate() {
+    // Централизованная настройка таймаутов для RestTemplate
+    @Bean("complexCheckRestTemplate")
+    public RestTemplate complexCheckRestTemplate() {
         // Создаём RequestConfig для HttpClient 5.x
         org.apache.hc.client5.http.config.RequestConfig requestConfig =
                 org.apache.hc.client5.http.config.RequestConfig.custom()
