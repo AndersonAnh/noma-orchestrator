@@ -8,6 +8,12 @@ databaseChangeLog:
   - include:
       file: v-1.0.0/alter-table-account.sql
       relativeToChangelogFile: true
+  - include:
+      file: v-1.0.0/create-table-bic.sql
+      relativeToChangelogFile: true
+  - include:
+      file: v-1.0.0/insert-bic-data.sql
+      relativeToChangelogFile: true
 
 
 

@@ -5,15 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
+import ru.vtb.msa.noma.orchestrator.db.entity.BicEntity;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
 import ru.vtb.msa.noma.orchestrator.db.repository.AccountRepository;
+import ru.vtb.msa.noma.orchestrator.db.repository.BicRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.TransactionRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.UserRepository;
 import ru.vtb.msa.noma.orchestrator.enums.TransactionProcessStatus;
-import ru.vtb.msa.noma.orchestrator.exception.AccountNotFoundException;
-import ru.vtb.msa.noma.orchestrator.exception.CurrencyMisMatchException;
-import ru.vtb.msa.noma.orchestrator.exception.TransactionReceiverNotFoundException;
-import ru.vtb.msa.noma.orchestrator.exception.TransactionSenderNotFoundException;
+import ru.vtb.msa.noma.orchestrator.exception.*;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
 import ru.vtb.msa.noma.orchestrator.integration.fraud.client.FraudClient;
@@ -45,6 +44,8 @@ public class AccountService {
     private final DtoMapper dtoMapper;
     private final FraudClient fraudClient;
     private final InfoServiceSender infoServiceSender;
+    private final BicCatalogService bicCatalogService;
+    private final BicRepository bicRepository;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
@@ -150,5 +151,14 @@ public class AccountService {
 
     public void accountUpdatedEvent(AccountUpdatedEventRequest account) {
         infoServiceSender.send(account);
+    }
+
+    public BanksAndTypesResponseDto getBanksAndTypes() {
+        BicEntity bicEntity = bicRepository.findTopByOrderByUploadedAtDesc()
+                .orElseThrow(() -> new BicNotFoundException("BIC каталог не найден."));
+        final String xmlBanksBicCatalog = bicEntity.getBicCatalog();
+        List<BicBankDto> banks = bicCatalogService.parseBanks(xmlBanksBicCatalog);
+        List<AccountTransferTypeDto> types = bicCatalogService.getTransferNominalTypes();
+        return new BanksAndTypesResponseDto(banks, types);
     }
 }

@@ -55,4 +55,9 @@ public class AccountApiController implements AccountApi {
     public AccountDto getAccountById(String authorizationHeader, String uuid) {
         return accountService.getAccountById(authorizationHeader, uuid);
     }
+
+    @Override
+    public BanksAndTypesResponseDto getBanksAndTypes() {
+        return accountService.getBanksAndTypes();
+    }
 }

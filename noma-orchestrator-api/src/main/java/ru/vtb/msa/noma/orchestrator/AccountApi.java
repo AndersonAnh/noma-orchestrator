@@ -135,4 +135,10 @@ public interface AccountApi {
     void accountUpdatedEvent (
             @RequestBody AccountUpdatedEventRequest account
     );
+
+    @Operation(
+            description = "Метод для получения списка банков и их БИК"
+    )
+    @GetMapping(value = "/account/closing/banks", produces = "application/json; charset=UTF-8")
+    BanksAndTypesResponseDto getBanksAndTypes();
 }
