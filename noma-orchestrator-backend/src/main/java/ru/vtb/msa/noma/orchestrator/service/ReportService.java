@@ -3,13 +3,13 @@ package ru.vtb.msa.noma.orchestrator.service;
 import net.sf.jasperreports.engine.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import ru.vtb.msa.noma.orchestrator.dto.TransferReceiptParams;
 
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class ReportService {
@@ -49,19 +49,5 @@ public class ReportService {
         paramsMap.put("senderBalanceAfter", params.senderBalanceAfter());
         paramsMap.put("receiverBalanceAfter", params.receiverBalanceAfter());
         return paramsMap;
-    }
-
-    /* Parameters record for report.
-     */
-    public record TransferReceiptParams(
-            UUID senderAccountId,
-            UUID receiverAccountId,
-            Double amount,
-            String currency,
-            String description,
-            String timestamp,
-            Double senderBalanceAfter,
-            Double receiverBalanceAfter
-    ) {
     }
 }
