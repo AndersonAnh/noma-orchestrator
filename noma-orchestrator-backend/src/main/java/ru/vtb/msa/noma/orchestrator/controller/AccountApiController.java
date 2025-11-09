@@ -1,8 +1,14 @@
 package ru.vtb.msa.noma.orchestrator.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vtb.msa.noma.orchestrator.AccountApi;
+import ru.vtb.msa.noma.orchestrator.MsaAdditionalHeaders;
 import ru.vtb.msa.noma.orchestrator.model.*;
 
 import ru.vtb.msa.noma.orchestrator.service.AccountService;
@@ -42,9 +48,18 @@ public class AccountApiController implements AccountApi {
     }
 
     @Override
-    public TransactionProcessResponse transactionProcess(String xRequestId, TransactionRequest request) {
-        return accountService.transactionsProcess(xRequestId, request);
+    public ResponseEntity<byte[]> transactionProcess(
+            @RequestHeader(MsaAdditionalHeaders.X_REQUEST_ID) String xRequestId,
+            @RequestBody TransactionRequest request
+    ) {
+        byte[] pdf = accountService.transactionsProcess(xRequestId, request);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"transfer-receipt.pdf\"");
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
+
 
     @Override
     public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {

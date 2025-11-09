@@ -46,6 +46,7 @@ public class AccountService {
     private final InfoServiceSender infoServiceSender;
     private final BicCatalogService bicCatalogService;
     private final BicRepository bicRepository;
+    private final ReportService reportService;
 
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
@@ -64,7 +65,7 @@ public class AccountService {
     }
 
     @Transactional
-    public TransactionProcessResponse transactionsProcess(String xRequestId, TransactionRequest request) {
+    public byte[] transactionsProcess(String xRequestId, TransactionRequest request) {
         ValidateUtil.validateXRequestIdHeader(xRequestId);
 
         UUID senderId = request.senderAccountId();
@@ -75,18 +76,31 @@ public class AccountService {
         Account receiver = accountRepository.findById(receiverId)
                 .orElseThrow(() -> new TransactionReceiverNotFoundException("Счет получателя не найден"));
 
-        if (!sender.getCurrency().equals(receiver.getCurrency())) {
-            throw new CurrencyMisMatchException("Валюта отправителя и получателя не соответствует");
-        }
-
         FraudResponse fraudResponse = fraudClient.checkFraud(sender, receiver);
 
         CheckResponseUtil.handleFraudResponse(fraudResponse);
         log.debug("Ответ из сервиса проверки на мошенничество {}", JsonUtil.toJson(fraudResponse));
 
-        transactionService.executeTransaction(request, sender, receiver);
+        transactionService.executeTransaction(request);
 
-        return new TransactionProcessResponse(TransactionProcessStatus.SUCCESS, request.description());
+        Account senderAfter = accountRepository.findById(senderId)
+                .orElseThrow(() -> new TransactionSenderNotFoundException("Счет отправителя не найден"));
+        Account receiverAfter = accountRepository.findById(receiverId)
+                .orElseThrow(() -> new TransactionReceiverNotFoundException("Счет получателя не найден"));
+
+        ReportService.TransferReceiptParams params = new ReportService.TransferReceiptParams(
+                request.senderAccountId(),
+                request.receiverAccountId(),
+                request.amount(),
+                request.currency(),
+                request.description(),
+                LocalDate.now().toString(),
+                senderAfter.getBalance(),
+                receiverAfter.getBalance()
+        );
+
+
+        return reportService.generateTransferReceiptPdf(params,null);
     }
 
     @Transactional(readOnly = true)

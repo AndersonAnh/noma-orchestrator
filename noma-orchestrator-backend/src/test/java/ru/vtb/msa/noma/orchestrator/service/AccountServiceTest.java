@@ -172,7 +172,7 @@ public class AccountServiceTest {
 
         accountService.transactionsProcess(validXRequestId, txRequest);
 
-        verify(transactionService).executeTransaction(txRequest, sender, receiver);
+        verify(transactionService).executeTransaction(txRequest);
     }
 
     @Test

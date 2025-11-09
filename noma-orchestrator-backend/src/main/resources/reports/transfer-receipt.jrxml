@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+			  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+			  name="transfer_receipt" language="java"
+			  pageWidth="595" pageHeight="842" columnWidth="515"
+			  leftMargin="40" rightMargin="40" topMargin="40" bottomMargin="40"
+			  uuid="b6d2e5e0-8c62-4b8b-9d1c-111111111111">
+
+	<!-- Дефолтный Unicode-шрифт -->
+	<property name="net.sf.jasperreports.default.font.name" value="DejaVu Sans"/>
+	<property name="net.sf.jasperreports.export.pdf.force.linebreak.policy" value="true"/>
+
+	<!-- Базовый стиль: задаём шрифт атрибутами стиля -->
+	<style name="BaseFont" isDefault="true"
+		   fontName="DejaVu Sans"
+		   pdfEncoding="Identity-H"
+		   isPdfEmbedded="true"/>
+
+	<parameter name="senderAccountId" class="java.lang.String"/>
+	<parameter name="receiverAccountId" class="java.lang.String"/>
+	<parameter name="amount" class="java.lang.Double"/>
+	<parameter name="currency" class="java.lang.String"/>
+	<parameter name="description" class="java.lang.String"/>
+	<parameter name="timestamp" class="java.lang.String"/>
+	<parameter name="senderBalanceAfter" class="java.lang.Double"/>
+	<parameter name="receiverBalanceAfter" class="java.lang.Double"/>
+
+	<title>
+		<band height="60">
+			<staticText>
+				<reportElement x="0" y="0" width="515" height="30" uuid="3f8d7b3c-2c7a-4f1e-86c4-9b3c2a1e5f10" style="BaseFont"/>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Квитанция о переводе]]></text>
+			</staticText>
+
+			<textField>
+				<reportElement x="0" y="35" width="515" height="20" uuid="0b2a1d34-7f5c-4c3e-9a11-bc5e2d7a8c90" style="BaseFont"/>
+				<textElement textAlignment="Center">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Дата: " + $P{timestamp}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+
+	<detail>
+		<band height="170">
+			<staticText>
+				<reportElement x="0" y="0" width="200" height="20" uuid="d5a1f3b2-7c89-4e10-b2a1-9c7e5d4a3f21" style="BaseFont"/>
+				<text><![CDATA[Счёт отправителя:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="210" y="0" width="305" height="20" uuid="5a3f1d2e-8b74-4c21-9f0a-2c3b6d7e8f90" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{senderAccountId}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="0" y="25" width="200" height="20" uuid="c7e2a1b4-3d5f-4a6b-8c21-9e0f1a2b3c4d" style="BaseFont"/>
+				<text><![CDATA[Счёт получателя:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="210" y="25" width="305" height="20" uuid="1f0a2b3c-4d5e-6f70-8a9b-bc1d2e3f4a56" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{receiverAccountId}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="0" y="50" width="200" height="20" uuid="9a8b7c6d-5e4f-3a2b-1c0d-ef9a8b7c6d5e" style="BaseFont"/>
+				<text><![CDATA[Сумма:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="210" y="50" width="145" height="20" uuid="2b3c4d5e-6f70-4a1b-9c8d-7e6f5a4b3c2d" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{amount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="365" y="50" width="150" height="20" uuid="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{currency}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="0" y="75" width="200" height="20" uuid="e3f2a1b0-9c8d-4e7f-b6a5-4132d1c0b9a8" style="BaseFont"/>
+				<text><![CDATA[Назначение:]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="210" y="75" width="305" height="40" uuid="0c1d2e3f-4a5b-6c7d-8e9f-a0b1c2d3e4f5" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{description} == null ? "" : $P{description}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="0" y="120" width="200" height="20" uuid="f9e8d7c6-b5a4-4c3d-9e8f-0123456789ab" style="BaseFont"/>
+				<text><![CDATA[Баланс отправителя после:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="210" y="120" width="305" height="20" uuid="7b6a5c4d-3e2f-4a1b-9c0d-8e7f6a5b4c3d" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{senderBalanceAfter}]]></textFieldExpression>
+			</textField>
+
+			<staticText>
+				<reportElement x="0" y="145" width="200" height="20" uuid="12f4c7a9-3b2e-4d81-9a6f-5c3b2a1d0e4f" style="BaseFont"/>
+				<text><![CDATA[Баланс получателя после:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00">
+				<reportElement x="210" y="145" width="305" height="20" uuid="84a1c2d3-b5e6-47f8-9c0d-1e2f3a4b5c6d" style="BaseFont"/>
+				<textFieldExpression><![CDATA[$P{receiverBalanceAfter}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+
+	<pageFooter>
+		<band height="20">
+			<staticText>
+				<reportElement x="0" y="0" width="515" height="20" uuid="3a9f8e7d-6c5b-4a3f-8e2d-1c0b9a8f7e6d" style="BaseFont"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Сформировано системой NOMA Orchestrator]]></text>
+			</staticText>
+		</band>
+	</pageFooter>
+</jasperReport>

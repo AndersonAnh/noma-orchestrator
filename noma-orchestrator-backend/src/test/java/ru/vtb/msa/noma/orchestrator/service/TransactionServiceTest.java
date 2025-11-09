@@ -55,7 +55,7 @@ public class TransactionServiceTest {
         );
 
 
-        transactionService.executeTransaction(request, sender, receiver);
+        transactionService.executeTransaction(request);
 
 
         assertEquals(70.0, sender.getBalance(), 1e-6);
@@ -105,7 +105,7 @@ public class TransactionServiceTest {
 
         NotEnoughFundsException ex = assertThrows(
                 NotEnoughFundsException.class,
-                () -> transactionService.executeTransaction(request, sender, receiver)
+                () -> transactionService.executeTransaction(request)
         );
         assertEquals("Недостаточно средств", ex.getMessage());
 
