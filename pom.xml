@@ -57,6 +57,24 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version><!-- или новее, совместимую с твоей версией Logback -->
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.20.0</version>
+        </dependency>
+        <!--  <dependency>
+              <groupId>ru.vtb.msa</groupId>
+              <artifactId>noma-orchestrator-api</artifactId>
+              <version>${project.version}</version>
+          </dependency>-->
+
     </dependencies>
 
     <dependencyManagement>

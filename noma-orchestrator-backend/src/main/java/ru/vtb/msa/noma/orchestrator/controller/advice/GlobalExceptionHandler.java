@@ -6,8 +6,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.ResourceAccessException;
 import ru.vtb.msa.noma.orchestrator.dto.ErrorDto;
 import ru.vtb.msa.noma.orchestrator.exception.*;
+
+import java.io.IOException;
 
 @Slf4j
 @ControllerAdvice
@@ -107,6 +110,22 @@ public class GlobalExceptionHandler {
                 .code("ERROR")
                 .header("Ошибка проверки мошенничества.")
                 .message("Не удалось выполнить проверку мошенничества. Попробуйте позже.")
+                .build();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler({
+            java.net.SocketTimeoutException.class,
+            ResourceAccessException.class,
+            IOException.class
+    })
+    protected ErrorDto handleIntegrationException(Exception exception) {
+        log.error("Ошибка интеграции с внешним сервисом: " + exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("INTEGRATION_UNAVAILABLE")
+                .header("Внешний сервис временно недоступен")
+                .message("Операция не выполнена из-за временной недоступности внешнего сервиса. Пожалуйста, попробуйте позже или обратитесь в службу поддержки.")
                 .build();
     }
 }

@@ -2,7 +2,7 @@ spring:
   application:
     name: noma-orchestrator
   kafka:
-    bootstrap-servers: localhost:29092
+    bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -10,16 +10,39 @@ spring:
       properties:
         enable.idempotence: true
         spring.json.add.type.headers: false
+    consumer:
+      group-id: system-info-group-id
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: '*'
+  cache:
+    type: caffeine
+    expireAfterWrite: 24
+    maximumSize: 98
   datasource:
     driver-class-name: org.postgresql.Driver
     username: admin
     password: qwerty
     url: jdbc:postgresql://localhost:5432/dev_noma_orchestrator
+    hikari:
+      # Устанавливаем таймзону на уровне handshake (GUC TimeZone)
+      data-source-properties:
+        options: -c TimeZone=Asia/Ho_Chi_Minh
+      # (необязательно) можно продублировать установку на каждый коннект
+      # connectionInitSql: "SET TIME ZONE 'Asia/Ho_Chi_Minh'"
+  jpa:
+    properties:
+      # Чтобы Hibernate/Java корректно конвертировал временные типы
+      hibernate.jdbc.time_zone: Asia/Ho_Chi_Minh
   liquibase:
     database-change-log-lock-table: ${spring.application.name}_DATABASECHANGELOCK
     change-log: db.changelog/changelog-master.yaml
+
 server:
-  port: 9999
+  port: 8888
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -31,14 +54,25 @@ springdoc:
     title: My API
     version: 1.0.0
     description: API Documentation
+
 integration:
+  retry:
+    config:
+      maxAttempts: 3
+      initialInterval: 2000
+      multiplier: 2.0
+      maxInterval: 10000
+      retryableExceptions:
+        - java.net.SocketTimeoutException
+        - org.springframework.web.client.ResourceAccessException
+        - java.io.IOException
+      connectTimeout: 2000
+      readTimeout: 5000
   complex-check:
     complex-check-url: ${COMPLEX_CHECK_URL:http://localhost:8081/check}
   fraud:
     fraud-url: ${FRAUD_URL:http://localhost:8082/fraud/check}
+
 logging:
   level:
     root: INFO
-
-
-
