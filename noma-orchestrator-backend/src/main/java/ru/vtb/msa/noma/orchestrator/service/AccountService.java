@@ -11,7 +11,7 @@ import ru.vtb.msa.noma.orchestrator.db.repository.AccountRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.BicRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.TransactionRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.UserRepository;
-import ru.vtb.msa.noma.orchestrator.enums.TransactionProcessStatus;
+import ru.vtb.msa.noma.orchestrator.dto.TransferReceiptParams;
 import ru.vtb.msa.noma.orchestrator.exception.*;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
@@ -88,19 +88,9 @@ public class AccountService {
         Account receiverAfter = accountRepository.findById(receiverId)
                 .orElseThrow(() -> new TransactionReceiverNotFoundException("Счет получателя не найден"));
 
-        ReportService.TransferReceiptParams params = new ReportService.TransferReceiptParams(
-                request.senderAccountId(),
-                request.receiverAccountId(),
-                request.amount(),
-                request.currency(),
-                request.description(),
-                LocalDate.now().toString(),
-                senderAfter.getBalance(),
-                receiverAfter.getBalance()
-        );
+        TransferReceiptParams transferReceiptParams = dtoMapper.transferReceiptToDto(request,senderAfter,receiverAfter);
 
-
-        return reportService.generateTransferReceiptPdf(params,null);
+        return reportService.generateTransferReceiptPdf(transferReceiptParams,null);
     }
 
     @Transactional(readOnly = true)

@@ -7,6 +7,7 @@ import org.mapstruct.MappingTarget;
 import ru.vtb.msa.noma.orchestrator.db.entity.Account;
 import ru.vtb.msa.noma.orchestrator.db.entity.Transaction;
 import ru.vtb.msa.noma.orchestrator.db.entity.User;
+import ru.vtb.msa.noma.orchestrator.dto.TransferReceiptParams;
 import ru.vtb.msa.noma.orchestrator.enums.Currency;
 import ru.vtb.msa.noma.orchestrator.model.*;
 
@@ -73,4 +74,14 @@ public interface DtoMapper {
             expression = "java(account.getStatus().name())")
     @Mapping(target = "createdAt", source = "account.createdAt")
     AccountDto accountToDto(Account account);
+
+    @Mapping(target = "senderAccountId",source = "transactionRequest.senderAccountId")
+    @Mapping(target = "receiverAccountId",source = "transactionRequest.receiverAccountId")
+    @Mapping(target = "amount",source = "transactionRequest.amount")
+    @Mapping(target = "currency",source = "transactionRequest.currency")
+    @Mapping(target = "description",source = "transactionRequest.description")
+    @Mapping(target = "timestamp",expression = "LocalDate.now().toString()")
+    @Mapping(target = "senderBalanceAfter",source = "senderAccount.senderBalanceAfter")
+    @Mapping(target = "receiverBalanceAfter",source = " receiverAccount.receiverBalanceAfter")
+    TransferReceiptParams transferReceiptToDto(TransactionRequest transactionRequest,Account senderAccount,Account receiverAccount);
 }
