@@ -3,9 +3,12 @@ package ru.vtb.msa.noma.orchestrator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.vtb.msa.noma.orchestrator.model.*;
 
@@ -28,19 +31,21 @@ public interface AccountApi {
     @PostMapping(
             path = "/transactions",
             consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
+            produces = MediaType.APPLICATION_PDF_VALUE
     )
     @Operation(description = "Перевод средств с одного аккаунта на другой")
-    TransactionProcessResponse transactionProcess(
-            @Parameter(description = "UUID для авторизации внутри системы")
-            @RequestHeader(MsaAdditionalHeaders.X_REQUEST_ID)
-            String xRequestId,
-
-            @Parameter(description = "Тело запроса")
-            @RequestBody
-            TransactionRequest request
+    @ApiResponse(
+            responseCode = "200",
+            description = "PDF-квитанция",
+            content = @Content(
+                    mediaType = MediaType.APPLICATION_PDF_VALUE,
+                    schema = @Schema(type = "string", format = "binary")
+            )
+    )
+    ResponseEntity<byte[]> transactionProcess(
+            @RequestHeader(MsaAdditionalHeaders.X_REQUEST_ID) String xRequestId,
+            @RequestBody TransactionRequest request
     );
-
 
     @GetMapping("getTransactionsByDate/{date}")
     @Operation(description = "Метод отвечает за получение транзакций по дате")
