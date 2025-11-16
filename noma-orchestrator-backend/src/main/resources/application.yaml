@@ -76,3 +76,18 @@ integration:
 logging:
   level:
     root: INFO
+
+management:
+  server:
+    port: 8088
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,metrics,info
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: noma-orchestrator
+      environment: dev

@@ -80,8 +80,8 @@ public interface DtoMapper {
     @Mapping(target = "amount",source = "transactionRequest.amount")
     @Mapping(target = "currency",source = "transactionRequest.currency")
     @Mapping(target = "description",source = "transactionRequest.description")
-    @Mapping(target = "timestamp",expression = "LocalDate.now().toString()")
-    @Mapping(target = "senderBalanceAfter",source = "senderAccount.senderBalanceAfter")
-    @Mapping(target = "receiverBalanceAfter",source = " receiverAccount.receiverBalanceAfter")
+    @Mapping(target = "timestamp",expression = "java(LocalDate.now().toString())")
+    @Mapping(target = "senderBalanceAfter",source = "senderAccount.balance")
+    @Mapping(target = "receiverBalanceAfter",source = " receiverAccount.balance")
     TransferReceiptParams transferReceiptToDto(TransactionRequest transactionRequest,Account senderAccount,Account receiverAccount);
 }

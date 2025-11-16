@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import ru.vtb.msa.noma.orchestrator.AccountApi;
 import ru.vtb.msa.noma.orchestrator.MsaAdditionalHeaders;
+import ru.vtb.msa.noma.orchestrator.annotation.Monitor;
+import ru.vtb.msa.noma.orchestrator.enums.MetricName;
 import ru.vtb.msa.noma.orchestrator.model.*;
-
 import ru.vtb.msa.noma.orchestrator.service.AccountService;
 
 import java.time.LocalDate;
@@ -22,31 +23,37 @@ public class AccountApiController implements AccountApi {
 
     private final AccountService accountService;
 
+    @Monitor(metricName = MetricName.ALL_ACCOUNTS)
     @Override
     public List<AccountDto> getAllAccounts(String authorizationHeader) {
         return accountService.getAllAccounts(authorizationHeader);
     }
 
+    @Monitor(metricName = MetricName.DELETE_ACCOUNT)
     @Override
     public void deleteAccount(String authorizationHeader, String id) {
         accountService.deleteAccount(authorizationHeader, id);
     }
 
+    @Monitor(metricName = MetricName.UPDATE_ACCOUNT)
     @Override
     public UpdateAccountResponse updateAccount(String authorizationHeader, String id, UpdateAccountRequest updateAccountRequest) {
         return accountService.updateAccount(authorizationHeader, id, updateAccountRequest);
     }
 
+    @Monitor(metricName = MetricName.ACCOUNT_UPDATED_EVENT)
     @Override
     public void accountUpdatedEvent(AccountUpdatedEventRequest account) {
         accountService.accountUpdatedEvent(account);
     }
 
+    @Monitor(metricName = MetricName.CREATE_ACCOUNT)
     @Override
     public CreateAccountResponse createAccount(String xRequestId, CreateAccountRequest request) {
         return accountService.createAccount(xRequestId, request);
     }
 
+    @Monitor(metricName = MetricName.TRANSACTION_PROCESS)
     @Override
     public ResponseEntity<byte[]> transactionProcess(
             @RequestHeader(MsaAdditionalHeaders.X_REQUEST_ID) String xRequestId,
@@ -60,17 +67,19 @@ public class AccountApiController implements AccountApi {
         return ResponseEntity.ok().headers(headers).body(pdf);
     }
 
-
+    @Monitor(metricName = MetricName.GET_TRANSACTION_BY_DATE)
     @Override
     public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {
         return accountService.getTransactionByDate(xRequestId, date);
     }
 
+    @Monitor(metricName = MetricName.GET_ACCOUNT_BY_ID)
     @Override
     public AccountDto getAccountById(String authorizationHeader, String uuid) {
         return accountService.getAccountById(authorizationHeader, uuid);
     }
 
+    @Monitor(metricName = MetricName.GET_BANKS_AND_TYPES)
     @Override
     public BanksAndTypesResponseDto getBanksAndTypes() {
         return accountService.getBanksAndTypes();
