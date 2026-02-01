@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'noma-orchestrator'
+    metrics_path: '/actuator/prometheus'  # ← Убедитесь, что этот путь указан
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['host.docker.internal:8088']  # порт 8088
+        labels:
+          application: 'noma-orchestrator'
+          environment: 'dev'

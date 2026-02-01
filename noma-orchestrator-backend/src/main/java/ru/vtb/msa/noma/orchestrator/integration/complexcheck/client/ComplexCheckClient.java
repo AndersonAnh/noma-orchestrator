@@ -11,6 +11,7 @@ import ru.vtb.msa.noma.orchestrator.integration.complexcheck.builder.ComplexChec
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckRequest;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
 import ru.vtb.msa.noma.orchestrator.model.CreateAccountRequest;
+import ru.vtb.msa.noma.orchestrator.model.InsuranceLifeRequest;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +31,6 @@ public class ComplexCheckClient {
     public ComplexCheckResponse complexCheck(CreateAccountRequest request) {
         final ComplexCheckRequest checkRequest = complexCheckRequestBuilder.buildComplexCheckRequest(request);
 
-        // Внешний вызов защищён RetryTemplate'ом: в случае ошибок будет повторно выполнен столько раз, сколько задано в конфиге
         return retryTemplate.execute(context -> {
             log.info("Вызов комплексной проверки (попытка №{}): {}", context.getRetryCount() + 1, checkRequest);
             return restTemplate.postForObject(
@@ -40,5 +40,19 @@ public class ComplexCheckClient {
             );
         });
     }
+
+    public ComplexCheckResponse complexCheck(InsuranceLifeRequest request) {
+        final ComplexCheckRequest checkRequest = complexCheckRequestBuilder.buildComplexCheckRequest(request);
+
+        return retryTemplate.execute(context -> {
+            log.info("Вызов комплексной проверки (попытка №{}): {}", context.getRetryCount() + 1, checkRequest);
+            return restTemplate.postForObject(
+                    complexCheckConfig.getComplexCheckUrl(),
+                    checkRequest,
+                    ComplexCheckResponse.class
+            );
+        });
+    }
+    
 }
 

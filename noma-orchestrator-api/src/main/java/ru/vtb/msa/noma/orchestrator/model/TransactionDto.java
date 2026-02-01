@@ -1,6 +1,8 @@
 package ru.vtb.msa.noma.orchestrator.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -8,6 +10,7 @@ import java.util.UUID;
         description = "DTO для представления транзакции в ответе API",
         name = "TransactionDto"
 )
+@Builder
 public record TransactionDto(
 
         @Schema(

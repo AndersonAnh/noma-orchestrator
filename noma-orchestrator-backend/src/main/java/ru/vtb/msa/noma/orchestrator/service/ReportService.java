@@ -16,9 +16,6 @@ public class ReportService {
 
     private static final String TEMPLATE_PATH = "reports/transfer-receipt.jrxml";
 
-    /* Generate transfer receipt PDF as bytes. Optionally can save to a file if outputPath is provided.
-     * @return PDF bytes
-     */
     public byte[] generateTransferReceiptPdf(TransferReceiptParams params, Path outputPathIfNotNull) {
         try (InputStream inputStream = new ClassPathResource(TEMPLATE_PATH).getInputStream()) {
             JasperReport report = JasperCompileManager.compileReport(inputStream);

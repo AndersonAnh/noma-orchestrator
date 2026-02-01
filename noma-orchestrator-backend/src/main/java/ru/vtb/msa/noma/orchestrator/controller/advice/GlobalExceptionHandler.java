@@ -66,12 +66,12 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseBody
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(NotEnoughFundsException.class)
     protected ErrorDto handleNotEnoughFundsException(Exception exception) {
         log.warn(exception.getMessage(), exception);
         return ErrorDto.builder()
-                .code("400")
+                .code("409")
                 .header("Произошла внутренняя ошибка при выполнении операции. Создайте обращение в службу поддержки")
                 .message("Недостаточно средств")
                 .build();
@@ -126,6 +126,18 @@ public class GlobalExceptionHandler {
                 .code("INTEGRATION_UNAVAILABLE")
                 .header("Внешний сервис временно недоступен")
                 .message("Операция не выполнена из-за временной недоступности внешнего сервиса. Пожалуйста, попробуйте позже или обратитесь в службу поддержки.")
+                .build();
+        }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InsuranceValidationException.class)
+    protected ErrorDto handleInsuranceValidationException(InsuranceValidationException exception) {
+        log.warn(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("BAD_REQUEST")
+                .header("Ошибка валидации входных данных")
+                .message(exception.getMessage())
                 .build();
     }
 }
