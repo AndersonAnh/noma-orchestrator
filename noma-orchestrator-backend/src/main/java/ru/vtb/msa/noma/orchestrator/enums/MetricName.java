@@ -14,7 +14,8 @@ public enum MetricName {
     TRANSACTION_PROCESS("transaction_process"),
     GET_TRANSACTION_BY_DATE("get_transaction_by_date"),
     GET_ACCOUNT_BY_ID("get_account_by_id"),
-    GET_BANKS_AND_TYPES("get_banks_and_types");
+    GET_BANKS_AND_TYPES("get_banks_and_types"),
+    CREATE_LIFE_POLICY("create_life_policy");
 
     private final String name;
 }

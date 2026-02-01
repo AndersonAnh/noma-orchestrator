@@ -71,5 +71,4 @@ public class LoggingAspect {
         );
         return proceed;
     }
-
 }

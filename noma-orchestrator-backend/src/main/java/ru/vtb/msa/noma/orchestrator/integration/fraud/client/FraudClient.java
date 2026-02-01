@@ -42,8 +42,8 @@ public class FraudClient {
                     context.getRetryCount() + 1, fraudRequest);
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);               // <— ключевое
-            headers.setAccept(List.of(MediaType.APPLICATION_JSON));           // хотим JSON в ответ
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(List.of(MediaType.APPLICATION_JSON));
             headers.setAcceptCharset(List.of(StandardCharsets.UTF_8));
 
             HttpEntity<FraudRequest> entity = new HttpEntity<>(fraudRequest, headers);

@@ -3,6 +3,7 @@ package ru.vtb.msa.noma.orchestrator.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ import java.util.UUID;
         name = "TransactionRequest",
         description = "Запрос на создание или перевод транзакции"
 )
+@Builder
 public record TransactionRequest(
 
         @Schema(

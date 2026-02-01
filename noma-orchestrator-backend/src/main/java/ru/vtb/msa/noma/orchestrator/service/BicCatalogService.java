@@ -38,7 +38,6 @@ public class BicCatalogService {
                 NodeList piList = bicElement.getElementsByTagName("ParticipantInfo");
                 if (piList.getLength() > 0) {
                     Element piElem = (Element) piList.item(0);
-                    // Очищаем название банка от лишних экранирований
                     bankName = piElem.getAttribute("NameP");
                 }
 

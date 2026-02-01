@@ -88,14 +88,14 @@ public class AccountService {
         Account receiverAfter = accountRepository.findById(receiverId)
                 .orElseThrow(() -> new TransactionReceiverNotFoundException("Счет получателя не найден"));
 
-        TransferReceiptParams transferReceiptParams = dtoMapper.transferReceiptToDto(request,senderAfter,receiverAfter);
+        TransferReceiptParams transferReceiptParams = dtoMapper.transferReceiptToDto(request, senderAfter, receiverAfter);
 
-        return reportService.generateTransferReceiptPdf(transferReceiptParams,null);
+        return reportService.generateTransferReceiptPdf(transferReceiptParams, null);
     }
 
     @Transactional(readOnly = true)
-    public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {
-        ValidateUtil.validateXRequestIdHeader(xRequestId);
+    public TransactionResponse getTransactionByDate(String xRequestId, LocalDate date) {//xRequestId,25.12.2025
+        ValidateUtil.validateXRequestIdHeader(xRequestId);//валидация xRequestId
 
         LocalDateTime from = date.atStartOfDay();
         LocalDateTime to = date.atTime(LocalTime.MAX);
@@ -120,10 +120,11 @@ public class AccountService {
     public List<AccountDto> getAllAccounts(String authorizationHeader) {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
-        return accountRepository.findAll()
-                .stream()
-                .map(dtoMapper::accountToDto)
-                .toList();
+        List<Account> accounts = accountRepository.findAll();
+        List<AccountDto> dtos = accounts.stream()
+                .map(account -> dtoMapper.accountToDto(account))
+                .collect(Collectors.toList());
+        return dtos;
     }
 
     @Transactional
@@ -142,7 +143,6 @@ public class AccountService {
                 );
 
         User user = account.getUser();
-        dtoMapper.updateUserFromDto(request.account().user(), user);
         userRepository.save(user);
 
         Account updatedAccount = dtoMapper.toAccount(request, user);

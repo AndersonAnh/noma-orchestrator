@@ -1,6 +1,7 @@
 package ru.vtb.msa.noma.orchestrator.config.fraud;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +19,8 @@ public class FraudRestTemplateConfig {
     @Bean("fraudRestTemplate")
     public RestTemplate fraudRestTemplate() {
         // Создаём RequestConfig для HttpClient 5.x
-        org.apache.hc.client5.http.config.RequestConfig requestConfig =
-                org.apache.hc.client5.http.config.RequestConfig.custom()
+        RequestConfig requestConfig =
+                RequestConfig.custom()
                         .setConnectTimeout(properties.getConnectTimeOut(), java.util.concurrent.TimeUnit.MILLISECONDS)
                         .setResponseTimeout(properties.getReadTimeOut(), java.util.concurrent.TimeUnit.MILLISECONDS)
                         .build();
