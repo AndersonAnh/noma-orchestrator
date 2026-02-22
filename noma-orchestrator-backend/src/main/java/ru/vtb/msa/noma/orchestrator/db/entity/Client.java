@@ -26,4 +26,7 @@ public class Client {
 
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
+
+    @Column(name = "age", nullable = true)
+    private Integer age;
 }

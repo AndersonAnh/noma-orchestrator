@@ -6,12 +6,16 @@ import ru.vtb.msa.noma.orchestrator.enums.PolicyStatus;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.enums.ComplexCheckResult;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckRequestResult;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
+import ru.vtb.msa.noma.orchestrator.integration.risk.pojo.RiskResponse;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifePolicyResponse;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifeRequest;
+import ru.vtb.msa.noma.orchestrator.model.InsuranceOfferRequest;
+import ru.vtb.msa.noma.orchestrator.model.InsuranceOfferResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class TestUtilInsuranceLife {
@@ -26,6 +30,56 @@ public class TestUtilInsuranceLife {
                 .baseInsuredAmount(BigDecimal.valueOf(10000))
                 .coverageType(CoverageType.FULL_LIFE)
                 .specialConditions("Специальные условия")
+                .build();
+    }
+   public static InsuranceOfferRequest getValidOfferRequest() {
+        return InsuranceOfferRequest.builder()
+                .clientExternalId(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"))
+                .insuredAge(35)
+                .desiredCoverageAmount(new BigDecimal("5000000.00"))
+                .policyTermYears(10)
+                .coverageType("WHOLE_LIFE")
+                .isHighRiskOccupation(false)
+                .hasDangerousHobbies(false)
+                .beneficiaryRelation("Супруга")
+                .build();
+   }
+    public static List<InsuranceOfferResponse> getInsuranceOfferResponses() {
+        return List.of(
+                new InsuranceOfferResponse(
+                        "OFFER-WHOLE-LIFE-2024-001",
+                        "WHOLE_LIFE",
+                        new BigDecimal("5000000.00"),
+                        new BigDecimal("45000.00"),
+                        10,
+                        "Пожизненное страхование жизни с гарантированной выплатой. Коэффициент риска: 1.0",
+                        new BigDecimal("1.0")
+                ),
+                new InsuranceOfferResponse(
+                        "OFFER-TERM-2024-001",
+                        "TERM",
+                        new BigDecimal("5000000.00"),
+                        new BigDecimal("38500.00"),
+                        10,
+                        "Срочное страхование жизни на 10 лет. Более доступная премия. Коэффициент риска: 1.0",
+                        new BigDecimal("1.0")
+                ),
+                new InsuranceOfferResponse(
+                        "OFFER-INVESTMENT-2024-001",
+                        "INVESTMENT",
+                        new BigDecimal("4000000.00"),
+                        new BigDecimal("52000.00"),
+                        8,
+                        "Инвестиционное страхование с возможностью роста капитала. Сумма 4 млн, срок 8 лет. Коэффициент риска: 1.0",
+                        new BigDecimal("1.0")
+                )
+        );
+    }
+
+    public static RiskResponse getRiskResponse() {
+        return RiskResponse.builder()
+                .riskFactor(1.0)
+                .riskLevel("LOW")
                 .build();
     }
 

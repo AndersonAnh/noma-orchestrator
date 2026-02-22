@@ -11,21 +11,13 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import ru.vtb.msa.noma.orchestrator.utils.SmartMaskUtil;
 
 @Component
 @Aspect
 @Slf4j
 public class LoggingAspect {
 
-    /**
-     * pointcut -определяет, где именно срабатывает аспект, по пути- ru.vtb.msa.noma.orchestrator.controller
-     * execution - ключевое слово,определяющее что аспект должен применятся к методам, соответствующим шаблоном в скобках,
-     * public на все публичные методы 1я * означает что возвращаемое значение метода может быть любое,
-     * ru.vtb.msa.noma.orchestrator.controller - пакет означающий где находится контролеры
-     * 2я * - любой класс в пакете включает этот метод
-     * 3я * - любой метод в любом классе попадает под воздействие этой точки пересечения
-     * (..) - метод может принимать любое количество параметров
-     */
     @Pointcut("execution(public * ru.vtb.msa.noma.orchestrator.controller.*.*(..))")
     public void controllerLog() {
     }
@@ -34,9 +26,6 @@ public class LoggingAspect {
     public void serviceLog() {
     }
 
-    /**
-     * @param joinPoint - содержит информацию о текущем методе
-     */
     @Before("controllerLog()")
     public void logController(JoinPoint joinPoint) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -45,30 +34,74 @@ public class LoggingAspect {
             request = attributes.getRequest();
         }
         if (request != null) {
+            String maskedUri = request.getRequestURI();
             log.info(
-                    "IP: {}, http метод: {}, метод контроллера {},{}",
+                    "IP: {}, http метод: {}, URI: {}, контроллер: {}.{}",
                     request.getRemoteAddr(),
-                    request.getRequestURI(),
                     request.getMethod(),
-                    joinPoint.getSignature().getDeclaringTypeName() + "." + joinPoint.getSignature().getName()
+                    maskedUri,
+                    joinPoint.getSignature().getDeclaringTypeName(),
+                    joinPoint.getSignature().getName()
             );
         }
     }
 
-    /**
-     * @param proceedingJoinPoint - в себе содержит метод который мы выполняем,и в нем содержится сам метод
-     *                            proceed - выполняет целевой метод
-     */
     @Around("controllerLog()")
     public Object logExecutionTime(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         long start = System.currentTimeMillis();
         Object proceed = proceedingJoinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
-        log.info("Выполняемый метод: {}, {}, время выполнения: {}",
+
+        String methodName = proceedingJoinPoint.getSignature().getName();
+        log.info("Метод: {}.{}, время выполнения: {} ms",
                 proceedingJoinPoint.getSignature().getDeclaringTypeName(),
-                proceedingJoinPoint.getSignature().getName(),
+                methodName,
                 executionTime
         );
         return proceed;
+    }
+
+    @Around("serviceLog()")
+    public Object logServiceExecution(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        String methodName = proceedingJoinPoint.getSignature().getName();
+        Object[] args = proceedingJoinPoint.getArgs();
+
+        // Логируем маскированные аргументы
+        if (args.length > 0) {
+            String maskedArgs = maskArguments(args);
+            log.debug("Вызов сервиса: {}.{}({})",
+                    proceedingJoinPoint.getSignature().getDeclaringTypeName(),
+                    methodName,
+                    maskedArgs);
+        }
+
+        long start = System.currentTimeMillis();
+        Object result = proceedingJoinPoint.proceed();
+        long executionTime = System.currentTimeMillis() - start;
+
+        log.debug("Сервис: {}.{} выполнен за {} ms",
+                proceedingJoinPoint.getSignature().getDeclaringTypeName(),
+                methodName,
+                executionTime);
+
+        return result;
+    }
+
+    private String maskArguments(Object[] args) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] != null) {
+                String argStr = args[i].toString();
+                String masked = SmartMaskUtil.maskEmail(argStr);
+                masked = SmartMaskUtil.maskPhone(masked);
+                masked = SmartMaskUtil.maskCreditCard(masked);
+                masked = SmartMaskUtil.maskTaxId(masked);
+                sb.append(masked);
+            }
+            if (i < args.length - 1) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
     }
 }

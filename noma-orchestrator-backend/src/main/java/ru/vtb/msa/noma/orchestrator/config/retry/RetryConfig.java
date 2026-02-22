@@ -21,14 +21,12 @@ public class RetryConfig {
     public RetryTemplate retryTemplate() throws ClassNotFoundException {
         RetryTemplate retryTemplate = new RetryTemplate();
 
-        // Backoff policy
         ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
         backOffPolicy.setInitialInterval(properties.getInitialInterval());
         backOffPolicy.setMultiplier(properties.getMultiplier());
         backOffPolicy.setMaxInterval(properties.getMaxInterval());
         retryTemplate.setBackOffPolicy(backOffPolicy);
 
-        // Retryable exceptions policy
         Map<Class<? extends Throwable>, Boolean> retryableMap = new HashMap<>();
         if (properties.getRetryableExceptions() != null && !properties.getRetryableExceptions().isEmpty()) {
             for (String clazzName : properties.getRetryableExceptions()) {

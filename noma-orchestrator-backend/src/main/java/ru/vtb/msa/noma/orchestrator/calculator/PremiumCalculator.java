@@ -1,6 +1,7 @@
 package ru.vtb.msa.noma.orchestrator.calculator;
 
 import org.springframework.stereotype.Component;
+import ru.vtb.msa.noma.orchestrator.integration.risk.enums.CoverageType;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,5 +37,53 @@ public class PremiumCalculator {
             case 60 -> baseAmount.multiply(new BigDecimal("2.0"));
             default -> baseAmount;
         };
+    }
+
+    /**
+     * Расчет премии по формуле:
+     * premiumAmount = (baseRate * desiredCoverageAmount * policyTermYears * riskFactor * coverageTypeMultiplier) / 1000
+     *
+     * @param baseRate базовый коэффициент (зависит от типа покрытия)
+     * @param desiredCoverageAmount желаемая сумма покрытия
+     * @param policyTermYears срок полиса в годах (может быть null для WHOLE_LIFE)
+     * @param riskFactor коэффициент риска от сервиса
+     * @param coverageTypeMultiplier множитель типа покры��ия
+     * @return рассчитанная премия, округленная до 2 знаков
+     */
+    public BigDecimal calculateInsurancePremium(
+            BigDecimal baseRate,
+            BigDecimal desiredCoverageAmount,
+            Integer policyTermYears,
+            BigDecimal riskFactor,
+            BigDecimal coverageTypeMultiplier) {
+
+        BigDecimal termYears = policyTermYears != null ? BigDecimal.valueOf(policyTermYears) : BigDecimal.ONE;
+
+        BigDecimal premium = baseRate
+                .multiply(desiredCoverageAmount)
+                .multiply(termYears)
+                .multiply(riskFactor)
+                .multiply(coverageTypeMultiplier)
+                .divide(BigDecimal.valueOf(1000), 10, RoundingMode.HALF_UP);
+
+        return premium.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Расчет премии с использованием типа покрытия
+     */
+    public BigDecimal calculateInsurancePremium(
+            BigDecimal desiredCoverageAmount,
+            Integer policyTermYears,
+            BigDecimal riskFactor,
+            CoverageType coverageType) {
+
+        return calculateInsurancePremium(
+                coverageType.getBaseRate(),
+                desiredCoverageAmount,
+                policyTermYears,
+                riskFactor,
+                coverageType.getMultiplier()
+        );
     }
 }
