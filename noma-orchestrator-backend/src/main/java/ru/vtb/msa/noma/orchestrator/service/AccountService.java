@@ -121,10 +121,9 @@ public class AccountService {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
         List<Account> accounts = accountRepository.findAll();
-        List<AccountDto> dtos = accounts.stream()
-                .map(account -> dtoMapper.accountToDto(account))
+        return accounts.stream()
+                .map(dtoMapper::accountToDto)
                 .collect(Collectors.toList());
-        return dtos;
     }
 
     @Transactional

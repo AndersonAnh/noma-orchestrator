@@ -1,6 +1,5 @@
 package ru.vtb.msa.noma.orchestrator.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -35,19 +34,6 @@ public class JsonUtil {
         return mapper;
     }
 
-    public static String toJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON serialization error", e);
-        }
-    }
-
-    /**
-     * Сериализует объект в JSON-строку с маскированием чувствительных полей
-     * (email, phone, taxId и др.) через SmartMaskUtil.
-     * Используйте этот метод вместо {@link #toJson(Object)} при логировании.
-     */
     public static String toMaskedJson(Object obj) {
         try {
             JsonNode tree = objectMapper.valueToTree(obj);

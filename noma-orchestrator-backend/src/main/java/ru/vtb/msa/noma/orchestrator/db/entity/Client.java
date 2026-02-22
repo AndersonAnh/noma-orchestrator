@@ -21,12 +21,12 @@ public class Client {
 
     private String fullName;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "phone", nullable = false, length = 20)
     private String phone;
 
-    @Column(name = "age", nullable = true)
+    @Column(name = "age")
     private Integer age;
 }

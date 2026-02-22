@@ -35,11 +35,9 @@ public class RiskAssessmentRestTemplateConfig {
 
         RestTemplate restTemplate = new RestTemplate(factory);
         
-        // Явно устанавливаем JSON конвертер с поддержкой application/json
         MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
         jsonConverter.setSupportedMediaTypes(Collections.singletonList(MediaType.APPLICATION_JSON));
         
-        // Удаляем XML конвертер и оставля��м только JSON
         restTemplate.getMessageConverters().removeIf(converter -> converter.getClass().getName().contains("Xml"));
         restTemplate.getMessageConverters().add(0, jsonConverter);
         

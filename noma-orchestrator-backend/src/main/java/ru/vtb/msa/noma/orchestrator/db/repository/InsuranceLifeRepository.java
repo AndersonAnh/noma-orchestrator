@@ -6,5 +6,4 @@ import ru.vtb.msa.noma.orchestrator.db.entity.InsuranceLife;
 import java.util.UUID;
 
 public interface InsuranceLifeRepository extends JpaRepository<InsuranceLife, UUID> {
-    boolean existsByClientId(UUID clientId);
 }
