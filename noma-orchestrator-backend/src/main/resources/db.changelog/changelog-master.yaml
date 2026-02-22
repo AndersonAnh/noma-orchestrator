@@ -17,6 +17,9 @@ databaseChangeLog:
   - include:
       file: v-1.0.0/create-table-insurance-life-policy.sql
       relativeToChangelogFile: true
-
-
-
+  - include:
+      file: v-1.0.0/create-table-client.sql
+      relativeToChangelogFile: true
+  - include:
+      file: v-1.0.0/insert-client-data.sql
+      relativeToChangelogFile: true

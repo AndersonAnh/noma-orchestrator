@@ -6,8 +6,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifePolicyResponse;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifeRequest;
+import ru.vtb.msa.noma.orchestrator.model.InsuranceOfferRequest;
+import ru.vtb.msa.noma.orchestrator.model.InsuranceOfferResponse;
 
-@RequestMapping("/api/insurance")
+import java.util.List;
+
+@RequestMapping("/api/v1/insurance")
 public interface InsuranceApi {
 
     @PostMapping("/create-policy")
@@ -15,5 +19,8 @@ public interface InsuranceApi {
             @RequestBody InsuranceLifeRequest request
     );
 
-
+    @PostMapping("/offers")
+    ResponseEntity<List<InsuranceOfferResponse>> generateInsuranceOffers(
+            @RequestBody InsuranceOfferRequest request
+    );
 }

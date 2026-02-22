@@ -72,6 +72,8 @@ integration:
     complex-check-url: ${COMPLEX_CHECK_URL:http://localhost:8081/check}
   fraud:
     fraud-url: ${FRAUD_URL:http://localhost:8082/fraud/check}
+  risk:
+    risk-url: ${RISK_SERVICE_URL:http://localhost:8089/api/v1/risk/calculate}
 
 logging:
   level:

@@ -53,14 +53,14 @@ public class AccountService {
 
         ComplexCheckResponse response = complexCheckClient.complexCheck(request);
         CheckResponseUtil.complexCheckResponseProcessing(response);
-        log.debug("Ответ из сервиса комплексной проверки {}", JsonUtil.toJson(response));
+        log.debug("Ответ из сервиса комплексной проверки {}", JsonUtil.toMaskedJson(response));
 
         User user = dtoMapper.toUser(request.user());
         user = userRepository.save(user);
 
         Account account = dtoMapper.toAccount(request, user);
         account = accountRepository.save(account);
-
+        log.info("New Account is Created: {}", JsonUtil.toMaskedJson(account));
         return new CreateAccountResponse(request.user(), account.getStatus().name());
     }
 
@@ -79,7 +79,7 @@ public class AccountService {
         FraudResponse fraudResponse = fraudClient.checkFraud(sender, receiver);
 
         CheckResponseUtil.handleFraudResponse(fraudResponse);
-        log.debug("Ответ из сервиса проверки на мошенничество {}", JsonUtil.toJson(fraudResponse));
+        log.debug("Ответ из сервиса проверки на мошенничество {}", JsonUtil.toMaskedJson(fraudResponse));
 
         transactionService.executeTransaction(request);
 
@@ -121,10 +121,9 @@ public class AccountService {
         ValidateUtil.validateAuthorizationHeader(authorizationHeader);
 
         List<Account> accounts = accountRepository.findAll();
-        List<AccountDto> dtos = accounts.stream()
-                .map(account -> dtoMapper.accountToDto(account))
+        return accounts.stream()
+                .map(dtoMapper::accountToDto)
                 .collect(Collectors.toList());
-        return dtos;
     }
 
     @Transactional

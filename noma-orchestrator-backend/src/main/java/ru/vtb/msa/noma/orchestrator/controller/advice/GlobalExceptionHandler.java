@@ -2,6 +2,7 @@ package ru.vtb.msa.noma.orchestrator.controller.advice;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -11,6 +12,7 @@ import ru.vtb.msa.noma.orchestrator.dto.ErrorDto;
 import ru.vtb.msa.noma.orchestrator.exception.*;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
@@ -140,6 +142,46 @@ public class GlobalExceptionHandler {
                 .message(exception.getMessage())
                 .build();
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ClientNotFoundException.class)
+    protected ErrorDto handleClientNotFoundException(ClientNotFoundException exception) {
+        log.warn(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("NOT_FOUND")
+                .header("Клиент не найден")
+                .message(exception.getMessage())
+                .build();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InsuranceOfferValidationException.class)
+    protected ErrorDto handleInsuranceOfferValidationException(InsuranceOfferValidationException exception) {
+        log.warn(exception.getMessage(), exception);
+        return ErrorDto.builder()
+                .code("BAD_REQUEST")
+                .header("Ошибка валидации предложения страхования")
+                .message(exception.getMessage())
+                .build();
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ErrorDto handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        String errors = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        
+        log.warn("Ошибка валидации входных данных: {}", errors);
+        return ErrorDto.builder()
+                .code("BAD_REQUEST")
+                .header("Ошибка валидации входных данных")
+                .message("Обязательные поля: " + errors)
+                .build();
+    }
 }
-
-

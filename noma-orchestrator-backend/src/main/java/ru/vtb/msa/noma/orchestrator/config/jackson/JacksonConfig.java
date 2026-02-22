@@ -33,7 +33,6 @@ public class JacksonConfig {
                     throws IOException {
                 gen.writeStartObject();
 
-                // ПРАВИЛЬНЫЙ способ - используем writeString, но предварительно очищаем данные
                 String cleanBankName = cleanJsonString(value.bankName());
                 gen.writeStringField("bankName", cleanBankName);
 

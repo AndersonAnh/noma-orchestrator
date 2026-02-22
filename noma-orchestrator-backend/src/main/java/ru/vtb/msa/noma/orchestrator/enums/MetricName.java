@@ -15,7 +15,8 @@ public enum MetricName {
     GET_TRANSACTION_BY_DATE("get_transaction_by_date"),
     GET_ACCOUNT_BY_ID("get_account_by_id"),
     GET_BANKS_AND_TYPES("get_banks_and_types"),
-    CREATE_LIFE_POLICY("create_life_policy");
+    CREATE_LIFE_POLICY("create_life_policy"),
+    CREATE_INSURANCE_OFFER("create_insurance_offer");
 
     private final String name;
 }

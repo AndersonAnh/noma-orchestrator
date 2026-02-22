@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import ru.vtb.msa.OrchestratorInfoResponse;
 import ru.vtb.msa.noma.orchestrator.integration.infoservice.service.InfoService;
 
-
 @Component
 @Slf4j
 @RequiredArgsConstructor

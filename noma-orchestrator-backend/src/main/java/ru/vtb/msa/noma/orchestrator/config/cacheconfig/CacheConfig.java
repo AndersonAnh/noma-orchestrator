@@ -16,9 +16,10 @@ import java.time.Duration;
 @EnableCaching
 public class CacheConfig {
     @Value("${spring.cache.expireAfterWrite}")
-    private static final Integer expireAfterWrite = 24;
+    private Integer expireAfterWrite;
+    
     @Value("${spring.cache.maximumSize}")
-    private static final Integer maximumSize = 98;
+    private Integer maximumSize;
 
     @Bean
     public Caffeine<Object, Object> caffeineConfig() {
