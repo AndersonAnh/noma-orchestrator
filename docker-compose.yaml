@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   db:
     image: postgres:latest
@@ -46,6 +44,39 @@ services:
     networks:
       - monitoring
 
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-noma
+    command: redis-server --requirepass 123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monitoring
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis_insight_data:/data
+    environment:
+      - RI_PROXY_ENABLE=true
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - monitoring
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.4
@@ -122,8 +153,11 @@ volumes:
   noma_postgres_data:
   info_postgres_data:
   risk_postgres_data:
+  redis_data:
+  redis_insight_data:
   prometheus_data:
   grafana_data:
+
 
 networks:
   monitoring:

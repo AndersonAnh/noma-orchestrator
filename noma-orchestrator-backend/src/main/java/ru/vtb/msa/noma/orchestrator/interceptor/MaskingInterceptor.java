@@ -34,7 +34,6 @@ public class MaskingInterceptor implements HandlerInterceptor {
         String queryString = request.getQueryString();
         String remoteAddr = request.getRemoteAddr();
 
-        // Маскируем query параметры если есть
         String maskedQuery = queryString != null ? maskQueryString(queryString) : "";
         String fullPath = maskedQuery.isEmpty() ? uri : uri + "?" + maskedQuery;
 
@@ -65,7 +64,6 @@ public class MaskingInterceptor implements HandlerInterceptor {
         int status = response.getStatus();
 
         if (ex != null) {
-            // Маскируем сообщение об ошибке
             String maskedError = maskSensitiveData(ex.getMessage());
             log.error("← HTTP {} {} | Status: {} | Время: {} ms | Ошибка: {}",
                     method, uri, status, duration, maskedError);
@@ -92,7 +90,6 @@ public class MaskingInterceptor implements HandlerInterceptor {
             String key = keyValue[0];
             String value = keyValue.length > 1 ? keyValue[1] : "";
 
-            // Маскируем значение по названию параметра
             String maskedValue = SmartMaskUtil.maskByFieldName(key, value);
             masked.append(key).append("=").append(maskedValue);
 
