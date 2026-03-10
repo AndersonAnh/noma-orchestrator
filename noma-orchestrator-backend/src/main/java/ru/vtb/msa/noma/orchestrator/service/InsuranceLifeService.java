@@ -7,10 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.vtb.msa.noma.orchestrator.calculator.PremiumCalculator;
 import ru.vtb.msa.noma.orchestrator.db.entity.Client;
 import ru.vtb.msa.noma.orchestrator.db.entity.InsuranceLife;
+import ru.vtb.msa.noma.orchestrator.cache.entitycache.InsuranceLifeCache;
 import ru.vtb.msa.noma.orchestrator.db.repository.ClientRepository;
+import ru.vtb.msa.noma.orchestrator.cache.repositorycache.InsuranceLifeCacheRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.InsuranceLifeRepository;
 import ru.vtb.msa.noma.orchestrator.exception.ClientNotFoundException;
 import ru.vtb.msa.noma.orchestrator.exception.IllegalCoverageType;
+import ru.vtb.msa.noma.orchestrator.exception.InsuranceValidationException;
 import ru.vtb.msa.noma.orchestrator.exception.NotValidAgeOfClientException;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
@@ -18,6 +21,7 @@ import ru.vtb.msa.noma.orchestrator.integration.risk.client.RiskClient;
 import ru.vtb.msa.noma.orchestrator.integration.risk.enums.CoverageType;
 import ru.vtb.msa.noma.orchestrator.integration.risk.pojo.RiskResponse;
 import ru.vtb.msa.noma.orchestrator.mapper.DtoMapper;
+import ru.vtb.msa.noma.orchestrator.mapper.InsuranceLifeCacheMapper;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifePolicyResponse;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifeRequest;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceOfferRequest;
@@ -29,6 +33,8 @@ import ru.vtb.msa.noma.orchestrator.utils.InsuranceRequestValidatorUtil;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +44,8 @@ public class InsuranceLifeService {
     private final static List<CoverageType> COVERAGE_TYPES = List.of(CoverageType.TERM, CoverageType.WHOLE_LIFE, CoverageType.INVESTMENT);
 
     private final InsuranceLifeRepository insuranceLifeRepository;
+    private final InsuranceLifeCacheRepository cacheRepository;
+    private final InsuranceLifeCacheMapper cacheMapper;
     private final ClientRepository clientRepository;
     private final PremiumCalculator premiumCalculator;
     private final DtoMapper dtoMapper;
@@ -66,11 +74,77 @@ public class InsuranceLifeService {
 
         InsuranceLife insurance = dtoMapper.toInsurance(request, insuredAmount, premium);
 
+        // 1. Сохраняем в PostgreSQL (источник истины)
         insurance = insuranceLifeRepository.save(insurance);
-        log.info("Полис сохранен в БД с ID: {}", insurance.getId());
+        log.info("Полис сохранён в PostgreSQL: id={}", insurance.getId());
+
+        // 2. Записываем в Redis-кэш (write-through)
+        InsuranceLifeCache cacheEntity = cacheMapper.toCache(insurance);
+        cacheRepository.save(cacheEntity);
+        log.info("Полис записан в Redis-кэш: id={}", insurance.getId());
 
         log.info("=== КОНЕЦ: Полис успешно создан ===");
         return dtoMapper.toInsuranceResponse(insurance);
+    }
+
+    /**
+     * Получить полис по ID.
+     * Cache-Aside: Redis → miss �� PostgreSQL → Redis SET.
+     *
+     * 1. Проверяет Redis (HGETALL InsuranceLifeCache:{id})
+     * 2. При cache hit — возвращает из Redis без обращения к БД
+     * 3. При cache miss — читает из PostgreSQL → записывает в Redis
+     */
+    public InsuranceLifePolicyResponse getLifePolicyById(UUID id) {
+        log.info("=== Получение полиса по ID: {} ===", id);
+        String key = id.toString();
+
+        // 1. Проверяем Redis-кэш
+        Optional<InsuranceLifeCache> cached = cacheRepository.findById(key);
+        if (cached.isPresent()) {
+            log.info("Cache HIT для InsuranceLife id={}", id);
+            InsuranceLife insurance = cacheMapper.toEntity(cached.get());
+            log.info("Полис найден в кэше: id={}, policyNumber={}", insurance.getId(), insurance.getPolicyNumber());
+            return dtoMapper.toInsuranceResponse(insurance);
+        }
+
+        log.info("Cache MISS для InsuranceLife id={}", id);
+
+        // 2. Читаем из PostgreSQL
+        InsuranceLife insurance = insuranceLifeRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Полис не найден: id={}", id);
+                    return new InsuranceValidationException("Полис страхования с ID " + id + " не найден");
+                });
+
+        // 3. Записываем в Redis-кэш
+        InsuranceLifeCache cacheEntity = cacheMapper.toCache(insurance);
+        cacheRepository.save(cacheEntity);
+        log.info("Записано в Redis-кэш: InsuranceLife id={}", id);
+
+        log.info("Полис найден: id={}, policyNumber={}", insurance.getId(), insurance.getPolicyNumber());
+        return dtoMapper.toInsuranceResponse(insurance);
+    }
+
+    /**
+     * Удалить полис по ID.
+     * Удаляет из PostgreSQL и инвалидирует Redis-кэш.
+     */
+    @Transactional
+    public void deleteLifePolicy(UUID id) {
+        log.info("=== Удаление полиса: id={} ===", id);
+
+        if (!insuranceLifeRepository.existsById(id)) {
+            throw new InsuranceValidationException("Полис страхования с ID " + id + " не найден");
+        }
+
+        // 1. Удаляем из PostgreSQL
+        insuranceLifeRepository.deleteById(id);
+        log.info("Полис удалён из PostgreSQL: id={}", id);
+
+        // 2. Удаляем из Redis-кэша
+        cacheRepository.deleteById(id.toString());
+        log.info("Полис удалён из Redis-кэша: id={}", id);
     }
 
     public List<InsuranceOfferResponse> generateInsuranceOffers(InsuranceOfferRequest request) {
