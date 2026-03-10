@@ -8,7 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.vtb.msa.noma.orchestrator.calculator.PremiumCalculator;
 import ru.vtb.msa.noma.orchestrator.db.entity.Client;
 import ru.vtb.msa.noma.orchestrator.db.entity.InsuranceLife;
+import ru.vtb.msa.noma.orchestrator.cache.entitycache.InsuranceLifeCache;
 import ru.vtb.msa.noma.orchestrator.db.repository.ClientRepository;
+import ru.vtb.msa.noma.orchestrator.cache.repositorycache.InsuranceLifeCacheRepository;
 import ru.vtb.msa.noma.orchestrator.db.repository.InsuranceLifeRepository;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.client.ComplexCheckClient;
 import ru.vtb.msa.noma.orchestrator.integration.complexcheck.pojo.ComplexCheckResponse;
@@ -16,6 +18,7 @@ import ru.vtb.msa.noma.orchestrator.integration.risk.client.RiskClient;
 import ru.vtb.msa.noma.orchestrator.integration.risk.enums.CoverageType;
 import ru.vtb.msa.noma.orchestrator.integration.risk.pojo.RiskResponse;
 import ru.vtb.msa.noma.orchestrator.mapper.DtoMapper;
+import ru.vtb.msa.noma.orchestrator.mapper.InsuranceLifeCacheMapper;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifePolicyResponse;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceLifeRequest;
 import ru.vtb.msa.noma.orchestrator.model.InsuranceOfferRequest;
@@ -36,6 +39,10 @@ public class InsuranceLifeServiceTest {
     @Mock
     private InsuranceLifeRepository insuranceLifeRepository;
     @Mock
+    private InsuranceLifeCacheRepository cacheRepository;
+    @Mock
+    private InsuranceLifeCacheMapper cacheMapper;
+    @Mock
     private ClientRepository clientRepository;
     @Mock
     private PremiumCalculator premiumCalculator;
@@ -55,6 +62,7 @@ public class InsuranceLifeServiceTest {
         ComplexCheckResponse response = TestUtilInsuranceLife.createAllowResponse();
         InsuranceLife insurance = TestUtilInsuranceLife.createInsurance();
         InsuranceLifePolicyResponse insuranceLifePolicyResponse = TestUtilInsuranceLife.createFullResponse();
+        InsuranceLifeCache cacheEntity = new InsuranceLifeCache();
         BigDecimal insuredAmount = BigDecimal.valueOf(1000);
         BigDecimal premium = BigDecimal.valueOf(1000);
 
@@ -63,6 +71,7 @@ public class InsuranceLifeServiceTest {
         when(premiumCalculator.calculatePremium(request.baseInsuredAmount(), request.insurancePeriod())).thenReturn(premium);
         when(dtoMapper.toInsurance(request, insuredAmount, premium)).thenReturn(insurance);
         when(insuranceLifeRepository.save(insurance)).thenReturn(insurance);
+        when(cacheMapper.toCache(insurance)).thenReturn(cacheEntity);
         when(dtoMapper.toInsuranceResponse(insurance)).thenReturn(insuranceLifePolicyResponse);
 
         InsuranceLifePolicyResponse result = insuranceLifeService.createLifePolicy(request);
@@ -74,6 +83,8 @@ public class InsuranceLifeServiceTest {
         verify(premiumCalculator).calculatePremium(request.baseInsuredAmount(), request.insurancePeriod());
         verify(dtoMapper).toInsurance(request, insuredAmount, premium);
         verify(insuranceLifeRepository).save(insurance);
+        verify(cacheMapper).toCache(insurance);
+        verify(cacheRepository).save(cacheEntity);
         verify(dtoMapper).toInsuranceResponse(insurance);
     }
 
