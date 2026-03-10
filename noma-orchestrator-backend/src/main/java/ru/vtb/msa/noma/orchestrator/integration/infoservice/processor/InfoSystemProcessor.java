@@ -2,53 +2,41 @@ package ru.vtb.msa.noma.orchestrator.integration.infoservice.processor;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import ru.vtb.msa.OrchestratorInfoResponse;
 
-import java.time.Instant;
+import java.time.Duration;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class InfoSystemProcessor {
 
-    private final CacheManager cacheManager;
+    private final StringRedisTemplate redisTemplate;
 
-    private static final String CACHE_NAME = "seenMessages";
+    private static final String KEY_PREFIX = "noma:seenMessages:";
+    private static final long TTL_HOURS = 24;
 
-    /**
-     * Проверяет, поступало ли уже сообщение с данным accountId и timestamp в течение последних 24 часов.
-     *
-     * @return true — если сообщение впервые, false — если уже приходило ранее
-     */
-    public boolean firstTime(OrchestratorInfoResponse orchestratorInfoResponse) {
-        Cache cache = cacheManager.getCache(CACHE_NAME);
-        if (cache == null) {
-            log.warn("Кэш {} не найден! Сообщение будет обработано как первое.", CACHE_NAME);
+    public boolean firstTime(OrchestratorInfoResponse response) {
+        String key = KEY_PREFIX + buildKey(response.accountId(), response.timestamp());
+
+        Boolean wasAbsent = redisTemplate.opsForValue()
+                .setIfAbsent(key, "1", Duration.ofHours(TTL_HOURS));
+
+        if (Boolean.TRUE.equals(wasAbsent)) {
+            log.info("Первое сообщение для accountId={} timestamp={}",
+                    response.accountId(), response.timestamp());
             return true;
         }
 
-        // создаём ключ по accountId + timestamp (LocalDate → Instant для уникальности)
-        String key = buildKey(orchestratorInfoResponse.accountId(), orchestratorInfoResponse.timestamp());
-        Boolean existed = cache.get(key, Boolean.class);
-
-        if (Boolean.TRUE.equals(existed)) {
-            log.info("Повторное сообщение (дубликат) для accountId={} timestamp={}", orchestratorInfoResponse.accountId(), orchestratorInfoResponse.timestamp());
-            return false;
-        }
-
-        cache.put(key, true);
-        log.info("Первое сообщение для accountId={} timestamp={} → сохраняем в кэш", orchestratorInfoResponse.accountId(), orchestratorInfoResponse.timestamp());
-        return true;
+        log.info("Дубликат для accountId={} timestamp={}",
+                response.accountId(), response.timestamp());
+        return false;
     }
 
     private String buildKey(String accountId, LocalDate timestamp) {
-        // Приводим LocalDate к Instant для единообразного ключа
-        Instant instant = timestamp.atStartOfDay().toInstant(ZoneOffset.UTC);
-        return accountId + "|" + instant.toEpochMilli();
+        return accountId + "|" + timestamp;
     }
 }
