@@ -83,6 +83,11 @@ integration:
   risk:
     risk-url: ${RISK_SERVICE_URL:http://localhost:8089/api/v1/risk/calculate}
 
+security:
+ jwt:
+   secret: ${JWT_SECRET:dXJpX2RlX2V4ZW1wbGVfY29udGVudF9wbGFjZWhvbGRlcg==}
+   expiration: 86400000
+
 logging:
   level:
     root: INFO
