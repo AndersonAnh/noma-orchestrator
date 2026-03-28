@@ -1,0 +1,50 @@
+### Регистрация нового пользователя
+POST http://localhost:8080/api/v1/authentication/register
+Content-Type: application/json
+
+{
+  "firstName": "Иван",
+  "lastName": "Петров",
+  "email": "ivan.petrov@example.com",
+  "password": "securePass123",
+  "role": "USER"
+}
+
+### Ожидаемый ответ регистрации (200 OK)
+# {
+#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#   "type": "Bearer"
+# }
+
+### Ошибка при регистрации: email уже существует (400 Bad Request)
+# {
+#   "timestamp": "2025-03-22T10:00:00",
+#   "status": 400,
+#   "error": "Bad Request",
+#   "message": "User with email already exists"
+# }
+
+###
+
+### Аутентификация пользователя
+POST http://localhost:8080/api/v1/authentication/authenticate
+Content-Type: application/json
+
+{
+  "email": "ivan.petrov@example.com",
+  "password": "securePass123"
+}
+
+### Ожидаемый ответ аутентификации (200 OK)
+# {
+#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+#   "type": "Bearer"
+# }
+
+### Ошибка аутентификации: неверные учетные данные (401 Unauthorized)
+# {
+#   "timestamp": "2025-03-22T10:05:00",
+#   "status": 401,
+#   "error": "Unauthorized",
+#   "message": "Invalid email or password"
+# }
